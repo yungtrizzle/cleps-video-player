@@ -7,13 +7,16 @@ Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
 
 
 {
-    pState=2;
-    player = new QMediaPlayer;//(0, QMediaPlayer::VideoSurface);
+    this->setGeometry(40,50,400,480);
+    this->setWindowTitle("Cleps Video Player");
+
+    player = new QMediaPlayer;
     playlist = new QMediaPlaylist;
     player->setPlaylist(playlist);
 
+
     videoWidget = new QVideoWidget;
-    fileMenu = new QMenu(tr("&File"));
+    fileMenu = new QMenu(tr("&Media"));
     QAction *opVid = new QAction(tr("&Open Video"), this);
     QAction *quit = new QAction(tr("&Quit"), this);
 
@@ -24,58 +27,72 @@ Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
      connect(quit, SIGNAL(triggered()), this, SLOT(quit()));
 
     fileMenu->addAction(opVid);
+    fileMenu->addSeparator();
     fileMenu->addAction(quit);
+
 
     gblMenu = new QMenuBar();
     gblMenu->addMenu(fileMenu);
 
-       playButton = new QPushButton;
+       playButton = new QPushButton();
+       playButton->setFlat(true);
+       playButton->setToolTip(tr("Play/Pause"));
        playButton->setEnabled(false);
        playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
 
-       pause = new QPushButton;
-       pause->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
 
+       stopButton= new QPushButton();
+       stopButton->setFlat(true);
+       stopButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
 
+      connect(stopButton, SIGNAL(clicked()),this,SLOT(stop()));
       connect(playButton, SIGNAL(clicked()),this, SLOT(play()));
 
 
     seekr = new QSlider(Qt::Horizontal);
     seekr->setRange(0,0);
 
+    volSlide = new QSlider(Qt::Horizontal);
+    volSlide->setRange(0,100);
+    volSlide->setValue(100);
+    volSlide->adjustSize();
+
     connect(seekr, SIGNAL(sliderMoved(int)),this, SLOT(setPosition(int)));
-
-
-       errorLabel = new QLabel;
-       errorLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
-
+    connect(volSlide, SIGNAL(valueChanged(int)),this, SLOT(changeVolume(int)));
 
     QBoxLayout *controlLayout = new QHBoxLayout;
     controlLayout->setMargin(0);
-    controlLayout->addWidget(playButton);
     controlLayout->addWidget(seekr);
+
+    QBoxLayout *mreLayout = new QHBoxLayout;
+    mreLayout->setMargin(0);
+    mreLayout->addWidget(playButton);
+    mreLayout->addWidget(stopButton);
+    mreLayout->insertStretch(10,800);
+    mreLayout->addWidget(volSlide);
 
     QBoxLayout *layout = new QVBoxLayout;
        layout->addWidget(gblMenu);
        layout->addWidget(videoWidget);
        layout->addLayout(controlLayout);
-       layout->addWidget(errorLabel);
+       layout->addLayout(mreLayout);
+
 
        setLayout(layout);
        player->setVideoOutput(videoWidget);
 
+
        connect(player, SIGNAL(stateChanged(QMediaPlayer::State)),this, SLOT(mediaStateChanged(QMediaPlayer::State)));
        connect(player, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
        connect(player, SIGNAL(durationChanged(qint64)), this, SLOT(durationChanged(qint64)));
-      // connect(&player, SIGNAL(error(QMediaPlayer::Error)), this, SLOT(handleError()));
 
 }
 
 
 /*****************Public Slots*************/
 
-void Cleps_VidPlayer::open(){
 
+void Cleps_VidPlayer::open(){
 
 QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video"), QDir::homePath());
 
@@ -90,8 +107,11 @@ QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video"), QDir::ho
 
 }
 
+
+
 void Cleps_VidPlayer::play(){
 
+player->setVolume(100);
 
     switch(player->state()) {
         case QMediaPlayer::PlayingState:
@@ -111,8 +131,31 @@ void Cleps_VidPlayer::quit(){
 
 }
 
+void Cleps_VidPlayer::stop(){
+
+    player->stop();
+    player->setVideoOutput(videoWidget);
+    playlist->setCurrentIndex(0);
+}
+
 
 /*****************Private Slots*************/
+
+
+void Cleps_VidPlayer::changeVolume(int volume){
+
+    volSlide->setValue(volume);
+    player->setVolume(volume);
+}
+
+void Cleps_VidPlayer::durationChanged(qint64 timed){
+
+    seekr->setRange(0,timed);
+}
+
+
+
+
 void Cleps_VidPlayer::mediaStateChanged(QMediaPlayer::State state)
 {
     switch(state) {
@@ -136,14 +179,6 @@ void Cleps_VidPlayer::positionChanged(qint64 position){
 
     seekr->setValue(position);
 }
-
-
-void Cleps_VidPlayer::durationChanged(qint64 timed){
-
-    seekr->setRange(0,timed);
-}
-
-
 
 
 

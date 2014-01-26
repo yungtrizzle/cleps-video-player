@@ -19,24 +19,25 @@ public slots:
     void open();
     void quit();
     void play();
+    void stop();
 
 private slots:
     void mediaStateChanged(QMediaPlayer::State);
     void setPosition(int);
     void positionChanged(qint64);
     void durationChanged(qint64);
-
+    void changeVolume(int);
 
 private:
     QMediaPlayer *player;
     QMediaPlaylist *playlist;
-    QSlider *seekr;
+    QSlider *seekr, *volSlide;
     QMenuBar *gblMenu;
     QMenu *fileMenu;
-    QAbstractButton *playButton, *pause;
+    QPushButton *playButton, *stopButton;
     QVideoWidget *videoWidget;
-    QLabel *errorLabel;
-    int pState;
+
+
 };
 
 #endif // CLEPS_VIDPLAYER_H

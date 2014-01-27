@@ -16,3 +16,5 @@ SOURCES += main.cpp\
         cleps_vidplayer.cpp
 
 HEADERS  += cleps_vidplayer.h
+
+TRANSLATIONS =

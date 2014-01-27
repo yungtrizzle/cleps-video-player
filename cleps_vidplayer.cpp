@@ -13,6 +13,7 @@ Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
     player->setPlaylist(playlist);
     videoWidget = new QVideoWidget;
 
+
     QShortcut *fll = new QShortcut(QKeySequence::FullScreen, videoWidget);
     connect(fll,SIGNAL(activated()),this,SLOT(fullScreen()));
 
@@ -192,7 +193,6 @@ void Cleps_VidPlayer::positionChanged(qint64 position){
 
     seekr->setValue(position);
 }
-
 
 
 

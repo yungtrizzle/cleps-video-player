@@ -13,8 +13,10 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        cleps_vidplayer.cpp
+        cleps_vidplayer.cpp \
+    Cleps_MainWindow.cpp
 
-HEADERS  += cleps_vidplayer.h
+HEADERS  += cleps_vidplayer.h \
+    Cleps_MainWindow.h
 
 TRANSLATIONS =

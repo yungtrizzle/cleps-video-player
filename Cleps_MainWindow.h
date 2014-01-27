@@ -16,49 +16,46 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 *******************************************************************************/
 
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QMainWindow>
 #include "cleps_vidplayer.h"
-#include <QVideoWidget>
 
-
-Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
-    : QWidget(parent)
-
+class MainWindow : public QMainWindow
 {
+    Q_OBJECT
+public:
+    explicit MainWindow(QWidget *parent = 0);
 
-    videoWidget = new QVideoWidget;
+signals:
 
-    QBoxLayout *mreLayout = new QHBoxLayout;
-    mreLayout->setMargin(0);
-    mreLayout->setSpacing(0);
-
-
-    QBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(videoWidget);
-    layout->addLayout(mreLayout);
-
-       setLayout(layout);
-
+public slots:
+    void open();
+    void quit();
+    void play();
+    void stop();
+    void mute();
 
 
-       QShortcut *fll = new QShortcut(QKeySequence::FullScreen, videoWidget);
-       connect(fll,SIGNAL(activated()),this,SLOT(fullScreen()));
+private slots:
+    void changeVolume(int);
+    void durationChanged(qint64);
+    void mediaStateChanged(QMediaPlayer::State);
+    void positionChanged(qint64);
+    void setPosition(int);
 
 
+private:
+    QMediaPlayer *playerD;
+    QMediaPlaylist *playlist;
+    QMenuBar *gblMenu;
+    QMenu *fileMenu;
+    QListView *plist;
+    Cleps_VidPlayer *player;
+    QPushButton *playButton, *stopButton, *volLbl;
+    QSlider *seekr, *volSlide;
 
-}
+};
 
-
-void Cleps_VidPlayer::fullScreen(){
-
-    if(videoWidget->isFullScreen()){
-        videoWidget->setFullScreen(false);
-    }else {
-        videoWidget->setFullScreen(true);
-    }
-}
-
-
-Cleps_VidPlayer::~Cleps_VidPlayer()
-{
-
-}
+#endif // MAINWINDOW_H

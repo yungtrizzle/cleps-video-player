@@ -2,7 +2,6 @@
 #define CLEPS_VIDPLAYER_H
 
 #include <QtWidgets>
-#include <QMainWindow>
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
 
@@ -22,6 +21,7 @@ public slots:
     void stop();
 
 private slots:
+    void fullScreen();
     void mediaStateChanged(QMediaPlayer::State);
     void setPosition(int);
     void positionChanged(qint64);

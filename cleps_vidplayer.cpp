@@ -1,10 +1,8 @@
 #include "cleps_vidplayer.h"
 #include <QVideoWidget>
-#include <QVideoSurfaceFormat>
 
 Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
     : QWidget(parent)
-
 
 {
     this->setGeometry(40,50,400,480);
@@ -13,15 +11,20 @@ Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
     player = new QMediaPlayer;
     playlist = new QMediaPlaylist;
     player->setPlaylist(playlist);
-
-
     videoWidget = new QVideoWidget;
+
+    QShortcut *fll = new QShortcut(QKeySequence::FullScreen, videoWidget);
+    connect(fll,SIGNAL(activated()),this,SLOT(fullScreen()));
+
+
     fileMenu = new QMenu(tr("&Media"));
-    QAction *opVid = new QAction(tr("&Open Video"), this);
+    QAction *opVid = new QAction(tr("&Add to Playlist"), this);
     QAction *quit = new QAction(tr("&Quit"), this);
+
 
     opVid->setShortcut(QKeySequence::Open);
     quit->setShortcut(QKeySequence::Quit);
+
 
      connect(opVid, SIGNAL(triggered()), this, SLOT(open()));
      connect(quit, SIGNAL(triggered()), this, SLOT(quit()));
@@ -37,13 +40,15 @@ Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
        playButton = new QPushButton();
        playButton->setFlat(true);
        playButton->setToolTip(tr("Play/Pause"));
-       playButton->setEnabled(false);
        playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-
+       playButton->setShortcut(QKeySequence(Qt::Key_Space));
 
        stopButton= new QPushButton();
        stopButton->setFlat(true);
+       stopButton->setToolTip(tr("Stop"));
        stopButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
+       stopButton->setShortcut(QKeySequence(Qt::Key_S));
+
 
       connect(stopButton, SIGNAL(clicked()),this,SLOT(stop()));
       connect(playButton, SIGNAL(clicked()),this, SLOT(play()));
@@ -55,6 +60,7 @@ Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
     volSlide = new QSlider(Qt::Horizontal);
     volSlide->setRange(0,100);
     volSlide->setValue(100);
+    volSlide->setToolTip(tr("Volume"));
     volSlide->adjustSize();
 
     connect(seekr, SIGNAL(sliderMoved(int)),this, SLOT(setPosition(int)));
@@ -68,7 +74,7 @@ Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
     mreLayout->setMargin(0);
     mreLayout->addWidget(playButton);
     mreLayout->addWidget(stopButton);
-    mreLayout->insertStretch(10,800);
+    mreLayout->insertStretch(2,800);
     mreLayout->addWidget(volSlide);
 
     QBoxLayout *layout = new QVBoxLayout;
@@ -108,7 +114,6 @@ QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video"), QDir::ho
 }
 
 
-
 void Cleps_VidPlayer::play(){
 
 player->setVolume(100);
@@ -134,6 +139,7 @@ void Cleps_VidPlayer::quit(){
 void Cleps_VidPlayer::stop(){
 
     player->stop();
+    player->setPosition(0);
     player->setVideoOutput(videoWidget);
     playlist->setCurrentIndex(0);
 }
@@ -148,12 +154,20 @@ void Cleps_VidPlayer::changeVolume(int volume){
     player->setVolume(volume);
 }
 
+void Cleps_VidPlayer::fullScreen(){
+
+    if(videoWidget->isFullScreen()){
+        videoWidget->setFullScreen(false);
+    }else {
+        videoWidget->setFullScreen(true);
+    }
+}
+
+
 void Cleps_VidPlayer::durationChanged(qint64 timed){
 
     seekr->setRange(0,timed);
 }
-
-
 
 
 void Cleps_VidPlayer::mediaStateChanged(QMediaPlayer::State state)
@@ -169,7 +183,6 @@ void Cleps_VidPlayer::mediaStateChanged(QMediaPlayer::State state)
 }
 
 void Cleps_VidPlayer::setPosition(int position){
-
 
     player->setPosition(position);
 

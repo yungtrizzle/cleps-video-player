@@ -24,6 +24,7 @@
 #include <QMediaPlaylist>
 
 
+
 class Cleps_VidPlayer : public QWidget
 {
     Q_OBJECT
@@ -42,10 +43,6 @@ private slots:
 
 
 private:
-
-
-
-
 
 };
 

@@ -14,9 +14,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         cleps_vidplayer.cpp \
-    Cleps_MainWindow.cpp
+    Cleps_MainWindow.cpp \
+    volumeslider.cpp
 
 HEADERS  += cleps_vidplayer.h \
-    Cleps_MainWindow.h
+    Cleps_MainWindow.h \
+    volumeslider.h
 
 TRANSLATIONS =

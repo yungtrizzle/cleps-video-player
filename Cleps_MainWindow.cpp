@@ -69,50 +69,37 @@ MainWindow::MainWindow(QWidget *parent) :
     stopButton->setToolTip(tr("Stop"));
     stopButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
 
-    volLbl = new QPushButton();
-    volLbl->setFlat(true);
-    volLbl->setToolTip(tr("Mute"));
-    volLbl->setIcon(style()->standardIcon(QStyle::SP_MediaVolume));
 
  seekr = new QSlider(Qt::Horizontal);
  seekr->setRange(0,0);
 
 
 
- volSlide = new QSlider(Qt::Horizontal);
- volSlide->setRange(0,100);
+ volSlide = new volumeSlider;
  volSlide->setValue(100);
  volSlide->setToolTip(tr("Volume"));
- volSlide->adjustSize();
+ //volSlide->adjustSize();
 
-     QToolBar *tBard = new QToolBar;
-     QToolBar *skr = new QToolBar;
-     QToolBar *vol = new QToolBar;
+ QStatusBar *sbar = this->statusBar();
+ sbar->adjustSize();
+
+     QToolBar *tBard = new QToolBar(tr("Transport"));
+
      tBard->addWidget(playButton);
      tBard->addWidget(stopButton);
+     tBard->addWidget(seekr);
+     tBard->addWidget(volSlide);
 
      tBard->setFloatable(false);
      tBard->setMovable(false);
      tBard->adjustSize();
 
-     skr->addWidget(seekr);
-     skr->setFloatable(false);
-     skr->setMovable(false);
-     skr->adjustSize();
-
-     vol->addWidget(volLbl);
-     vol->addWidget(volSlide);
-     vol->setFloatable(false);
-     vol->setMovable(false);
-     vol->adjustSize();
-
-     addToolBar(vol);
      addToolBar(tBard);
-     addToolBar(skr);
+
 
      playButton->setShortcut(QKeySequence(Qt::Key_Space));
      stopButton->setShortcut(QKeySequence(Qt::Key_S));
-     volLbl->setShortcut(QKeySequence(Qt::Key_M));
+     QShortcut *mte = new QShortcut(QKeySequence(Qt::Key_M), this);
 
     plist = new QListView;
 
@@ -120,21 +107,21 @@ MainWindow::MainWindow(QWidget *parent) :
       plistWidget->setAllowedAreas(Qt::RightDockWidgetArea);
       plistWidget->setWidget(plist);
       addDockWidget(Qt::RightDockWidgetArea, plistWidget);
-    /* plistWidget->setFixedWidth(250);
+      plistWidget->setFixedWidth(250);
       plistWidget->setFixedHeight(500);
- */
+
 
 
 
        connect(playerD, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
        connect(seekr, SIGNAL(sliderMoved(int)),this, SLOT(setPosition(int)));
-       connect(volSlide, SIGNAL(valueChanged(int)),this, SLOT(changeVolume(int)));
+       connect(volSlide, SIGNAL(volumeChanged(int)),this, SLOT(changeVolume(int)));
        connect(playerD, SIGNAL(stateChanged(QMediaPlayer::State)),this, SLOT(mediaStateChanged(QMediaPlayer::State)));
        connect(playerD, SIGNAL(durationChanged(qint64)), this, SLOT(durationChanged(qint64)));
 
        connect(stopButton, SIGNAL(clicked()),this,SLOT(stop()));
        connect(playButton, SIGNAL(clicked()),this, SLOT(play()));
-       connect(volLbl,SIGNAL(clicked()),this,SLOT(mute()));
+       connect(mte,SIGNAL(activated()),this,SLOT(mute()));
 
 
 }

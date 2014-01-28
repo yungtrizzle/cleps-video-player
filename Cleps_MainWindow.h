@@ -21,6 +21,7 @@
 
 #include <QMainWindow>
 #include "cleps_vidplayer.h"
+#include "volumeslider.h"
 
 class MainWindow : public QMainWindow
 {
@@ -54,7 +55,8 @@ private:
     QListView *plist;
     Cleps_VidPlayer *player;
     QPushButton *playButton, *stopButton, *volLbl;
-    QSlider *seekr, *volSlide;
+    QSlider *seekr;
+   volumeSlider *volSlide;
 
 };
 

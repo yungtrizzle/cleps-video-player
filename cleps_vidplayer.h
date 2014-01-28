@@ -38,9 +38,9 @@ public slots:
 
 private slots:
 
-
-    void fullScreen();
-
+   void fullScreen();
+   void mouseDoubleClickEvent(QMouseEvent *event);
+   void contextMenuEvent(QContextMenuEvent *event);
 
 private:
 

@@ -22,6 +22,7 @@
 #include <QMainWindow>
 #include "cleps_vidplayer.h"
 #include "volumeslider.h"
+#include "playlistview.h"
 
 class MainWindow : public QMainWindow
 {
@@ -29,14 +30,20 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
 
+
 signals:
 
 public slots:
+    void clear();
     void open();
     void quit();
     void play();
+    void playd(QModelIndex index);
     void stop();
     void mute();
+    void nextMedia();
+    void previousMedia();
+    void showPlaylist();
 
 
 private slots:
@@ -52,11 +59,12 @@ private:
     QMediaPlaylist *playlist;
     QMenuBar *gblMenu;
     QMenu *fileMenu;
-    QListView *plist;
+    QStringList plist;
     Cleps_VidPlayer *player;
-    QPushButton *playButton, *stopButton, *volLbl;
+    QToolButton *playButton, *stopButton, *next, *previous;
     QSlider *seekr;
-   volumeSlider *volSlide;
+    volumeSlider *volSlide;
+    playlistView *viewer;
 
 };
 

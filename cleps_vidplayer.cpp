@@ -24,13 +24,11 @@ Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
     : QWidget(parent)
 
 {
-
     videoWidget = new QVideoWidget;
 
     QBoxLayout *mreLayout = new QHBoxLayout;
     mreLayout->setMargin(0);
     mreLayout->setSpacing(0);
-
 
     QBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(videoWidget);
@@ -39,11 +37,8 @@ Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
        setLayout(layout);
 
 
-
        QShortcut *fll = new QShortcut(QKeySequence::FullScreen, videoWidget);
        connect(fll,SIGNAL(activated()),this,SLOT(fullScreen()));
-
-
 
 }
 
@@ -57,6 +52,21 @@ void Cleps_VidPlayer::fullScreen(){
     }
 }
 
+void Cleps_VidPlayer::mouseDoubleClickEvent(QMouseEvent *event)
+{
+   videoWidget->setFullScreen(!isFullScreen());
+   event->accept();
+}
+
+void Cleps_VidPlayer::contextMenuEvent(QContextMenuEvent *event)
+{
+    QMenu menu(this);
+    menu.addAction(tr("Open Playlist"), this->parent(), SLOT(showPlaylist()));
+//add menu items as needed
+
+    menu.exec(event->globalPos());
+
+}
 
 Cleps_VidPlayer::~Cleps_VidPlayer()
 {

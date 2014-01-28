@@ -15,10 +15,12 @@ TEMPLATE = app
 SOURCES += main.cpp\
         cleps_vidplayer.cpp \
     Cleps_MainWindow.cpp \
-    volumeslider.cpp
+    volumeslider.cpp \
+    playlistview.cpp
 
 HEADERS  += cleps_vidplayer.h \
     Cleps_MainWindow.h \
-    volumeslider.h
+    volumeslider.h \
+    playlistview.h
 
 TRANSLATIONS =

@@ -19,6 +19,9 @@
 #include "Cleps_MainWindow.h"
 #include "cleps_vidplayer.h"
 
+
+
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
@@ -59,34 +62,44 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setMenuBar(gblMenu);
 
 
-    playButton = new QPushButton();
-    playButton->setFlat(true);
+    playButton = new QToolButton();
     playButton->setToolTip(tr("Play/Pause"));
     playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
 
-    stopButton= new QPushButton();
-    stopButton->setFlat(true);
+    stopButton= new QToolButton();
     stopButton->setToolTip(tr("Stop"));
     stopButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
+
+    next = new QToolButton();
+    next->setToolTip(tr("Next"));
+    next->setIcon(style()->standardIcon(QStyle::SP_MediaSkipForward));
+
+    previous = new QToolButton();
+    previous->setToolTip(tr("Previous"));
+    previous->setIcon(style()->standardIcon(QStyle::SP_MediaSkipBackward));
 
 
  seekr = new QSlider(Qt::Horizontal);
  seekr->setRange(0,0);
 
-
-
  volSlide = new volumeSlider;
  volSlide->setValue(100);
  volSlide->setToolTip(tr("Volume"));
- //volSlide->adjustSize();
+ volSlide->adjustSize();
 
  QStatusBar *sbar = this->statusBar();
+ QLabel *brLabel = new QLabel();
+ brLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+
+ sbar->addPermanentWidget(brLabel, 800);
  sbar->adjustSize();
 
-     QToolBar *tBard = new QToolBar(tr("Transport"));
+     QToolBar *tBard = new QToolBar(tr("View Transport"));
 
      tBard->addWidget(playButton);
      tBard->addWidget(stopButton);
+     tBard->addWidget(previous);
+     tBard->addWidget(next);
      tBard->addWidget(seekr);
      tBard->addWidget(volSlide);
 
@@ -99,19 +112,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
      playButton->setShortcut(QKeySequence(Qt::Key_Space));
      stopButton->setShortcut(QKeySequence(Qt::Key_S));
+     next->setShortcut(QKeySequence(Qt::Key_N));
+     previous->setShortcut(QKeySequence(Qt::Key_P));
      QShortcut *mte = new QShortcut(QKeySequence(Qt::Key_M), this);
-
-    plist = new QListView;
-
-      QDockWidget *plistWidget = new QDockWidget(this);
-      plistWidget->setAllowedAreas(Qt::RightDockWidgetArea);
-      plistWidget->setWidget(plist);
-      addDockWidget(Qt::RightDockWidgetArea, plistWidget);
-      plistWidget->setFixedWidth(250);
-      plistWidget->setFixedHeight(500);
-
-
-
+     QShortcut *shwList = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L),this);
 
        connect(playerD, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
        connect(seekr, SIGNAL(sliderMoved(int)),this, SLOT(setPosition(int)));
@@ -121,9 +125,22 @@ MainWindow::MainWindow(QWidget *parent) :
 
        connect(stopButton, SIGNAL(clicked()),this,SLOT(stop()));
        connect(playButton, SIGNAL(clicked()),this, SLOT(play()));
+       connect(next,SIGNAL(clicked()),this,SLOT(nextMedia()));
+       connect(previous, SIGNAL(clicked()),this,SLOT(previousMedia()));
        connect(mte,SIGNAL(activated()),this,SLOT(mute()));
+       connect(shwList, SIGNAL(activated()),this, SLOT(showPlaylist()));
 
 
+       viewer = new playlistView(this);
+
+}
+
+void MainWindow::clear()
+{
+    playlist->clear();
+    plist.clear();
+    viewer->setPlaylist(plist);
+    stop();
 }
 
 
@@ -134,6 +151,10 @@ QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video"), QDir::ho
   if (!fileName.isEmpty()){
 
      playlist->addMedia(QUrl::fromLocalFile((fileName)));
+
+      fileName = fileName.section('/', -1);
+     plist.append(fileName);
+     viewer->setPlaylist(plist);
   }
 
 }
@@ -177,9 +198,28 @@ void MainWindow::mute(){
     }
 }
 
+void MainWindow::nextMedia()
+{
+    playlist->next();
+}
+
+void MainWindow::previousMedia()
+{
+    playlist->previous();
+}
+
+void MainWindow::showPlaylist()
+{
+    viewer->show();
+    viewer->raise();
+    viewer->activateWindow();
+}
+
 
 
 void MainWindow::play(){
+
+  setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));  ;
 
 playerD->setVolume(100);
 
@@ -190,7 +230,17 @@ playerD->setVolume(100);
         default:
             playerD->play();
             break;
+    }
 }
+
+void MainWindow::playd(QModelIndex index)
+{
+    playlist->setCurrentIndex(index.row());
+    playerD->stop();
+    playerD->setPosition(0);
+    playerD->setVideoOutput(player->videoWidget);
+    play();
+
 }
 
 

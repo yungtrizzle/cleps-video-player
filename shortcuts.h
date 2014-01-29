@@ -16,60 +16,33 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 *******************************************************************************/
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
 
-#include <QMainWindow>
-#include "cleps_vidplayer.h"
-#include "volumeslider.h"
-#include "playlistview.h"
+#ifndef SHORTCUTS_H
+#define SHORTCUTS_H
 
-class MainWindow : public QMainWindow
+#include <QWidget>
+#include <QtWidgets>
+#include "shortcuteditor.h"
+
+
+class shortcuts : public QWidget
 {
     Q_OBJECT
 public:
-    explicit MainWindow(QWidget *parent = 0);
-
+    explicit shortcuts(QWidget *parent = 0);
+    void defaultData();
+    QStandardItemModel *model;
+    QStringList data;
+    QTableView *scutTable;
+    QKeySequence seq;
+    shortcutEditor *edit;
 
 signals:
 
 public slots:
-    void clear();
-    void open();
-    void quit();
-    void play();
-    void playd(QModelIndex index);
-    void stop();
-    void mute();
-    void nextMedia();
-    void previousMedia();
-    void showPlaylist();
-
-
-private slots:
-    void changeVolume(int);
-    void durationChanged(qint64);
-    void mediaChanged();
-    void mediaStateChanged(QMediaPlayer::State);
-    void positionChanged(qint64);
-    void setPosition(int);
-    void readSettings();
-    void viewSettings();
-
-private:
-    QMediaPlayer *playerD;
-    QMediaPlaylist *playlist;
-    QMenuBar *gblMenu;
-    QMenu *fileMenu, *settingsMenu;
-    QStringList plist;
-    Cleps_VidPlayer *player;
-    QToolButton *playButton, *stopButton, *next, *previous;
-    QSlider *seekr;
-    volumeSlider *volSlide;
-    playlistView *viewer;
-    QShortcut *mte, *shwList;
-
-
+    void keySequenceInput();
+    void resetData();
+    void readSequence(QKeySequence keySequence);
 };
 
-#endif // MAINWINDOW_H
+#endif // SHORTCUTS_H

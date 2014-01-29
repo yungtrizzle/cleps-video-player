@@ -25,6 +25,9 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+    a.setOrganizationName("Cleps");
+    a.setApplicationName("Cleps Video Player");
+
     QString locale = QLocale::system().name();
 
     QTranslator translator;

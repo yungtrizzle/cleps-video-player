@@ -16,60 +16,25 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 *******************************************************************************/
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#include "shortcuteditor.h"
+#include <QBoxLayout>
 
-#include <QMainWindow>
-#include "cleps_vidplayer.h"
-#include "volumeslider.h"
-#include "playlistview.h"
 
-class MainWindow : public QMainWindow
+shortcutEditor::shortcutEditor(QWidget *parent) :
+    QDialog(parent)
 {
-    Q_OBJECT
-public:
-    explicit MainWindow(QWidget *parent = 0);
 
+    this->setFixedSize(250,100);
 
-signals:
+    msg = new QLabel(tr("<i>Enter New ShortCut</i>"));
+    editor = new QKeySequenceEdit(this);
+    ok = new QPushButton(tr("Ok"));
+    QBoxLayout *vlay = new QVBoxLayout;
+    vlay->addWidget(msg);
+    vlay->addWidget(editor);
+    vlay->addWidget(ok);
+    setLayout(vlay);
 
-public slots:
-    void clear();
-    void open();
-    void quit();
-    void play();
-    void playd(QModelIndex index);
-    void stop();
-    void mute();
-    void nextMedia();
-    void previousMedia();
-    void showPlaylist();
-
-
-private slots:
-    void changeVolume(int);
-    void durationChanged(qint64);
-    void mediaChanged();
-    void mediaStateChanged(QMediaPlayer::State);
-    void positionChanged(qint64);
-    void setPosition(int);
-    void readSettings();
-    void viewSettings();
-
-private:
-    QMediaPlayer *playerD;
-    QMediaPlaylist *playlist;
-    QMenuBar *gblMenu;
-    QMenu *fileMenu, *settingsMenu;
-    QStringList plist;
-    Cleps_VidPlayer *player;
-    QToolButton *playButton, *stopButton, *next, *previous;
-    QSlider *seekr;
-    volumeSlider *volSlide;
-    playlistView *viewer;
-    QShortcut *mte, *shwList;
-
-
-};
-
-#endif // MAINWINDOW_H
+    connect(editor,SIGNAL(keySequenceChanged(QKeySequence)),this->parent(),SLOT(readSequence(QKeySequence)));
+    connect(ok,SIGNAL(clicked()),this, SLOT(close()));
+}

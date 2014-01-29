@@ -16,11 +16,21 @@ SOURCES += main.cpp\
         cleps_vidplayer.cpp \
     Cleps_MainWindow.cpp \
     volumeslider.cpp \
-    playlistview.cpp
+    playlistview.cpp \
+    settings_dialog.cpp \
+    shortcuteditor.cpp \
+    shortcuts.cpp
 
 HEADERS  += cleps_vidplayer.h \
     Cleps_MainWindow.h \
     volumeslider.h \
-    playlistview.h
+    playlistview.h \
+    settings_dialog.h \
+    shortcuteditor.h \
+    shortcuts.h
 
 TRANSLATIONS =
+
+RESOURCES += \
+    icons.qrc
+

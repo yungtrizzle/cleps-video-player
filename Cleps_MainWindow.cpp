@@ -1,4 +1,4 @@
-/******************************************************************************
+﻿/******************************************************************************
 *   Cleps Video Player. Simply a media player, no more, no less.              *
 *   Copyright (C) 2014  Eshton Robateau <eshtonrob@gmail.com>                 *
 *                                                                             *
@@ -18,8 +18,7 @@
 
 #include "Cleps_MainWindow.h"
 #include "cleps_vidplayer.h"
-
-
+#include "settings_dialog.h"
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -31,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     playerD = new QMediaPlayer;
     playlist = new QMediaPlaylist;
+    playlist->setPlaybackMode(QMediaPlaylist::Loop);
     playerD->setPlaylist(playlist);
     player = new Cleps_VidPlayer(this);
 
@@ -44,9 +44,6 @@ MainWindow::MainWindow(QWidget *parent) :
     QAction *quit = new QAction(tr("&Quit"), this);
 
 
-    opVid->setShortcut(QKeySequence::Open);
-    quit->setShortcut(QKeySequence::Quit);
-
      connect(opVid, SIGNAL(triggered()), this, SLOT(open()));
      connect(quit, SIGNAL(triggered()), this, SLOT(quit()));
 
@@ -54,9 +51,16 @@ MainWindow::MainWindow(QWidget *parent) :
     fileMenu->addSeparator();
     fileMenu->addAction(quit);
 
+    settingsMenu = new QMenu(tr("Tools"));
+    QAction *config = new QAction(tr("Preferences"), this);
+
+    connect(config,SIGNAL(triggered()),this,SLOT(viewSettings()));
+    settingsMenu->addAction(config);
+
 
     gblMenu = new QMenuBar();
     gblMenu->addMenu(fileMenu);
+    gblMenu->addMenu(settingsMenu);
     gblMenu->ensurePolished();
 
     this->setMenuBar(gblMenu);
@@ -87,13 +91,6 @@ MainWindow::MainWindow(QWidget *parent) :
  volSlide->setToolTip(tr("Volume"));
  volSlide->adjustSize();
 
- QStatusBar *sbar = this->statusBar();
- QLabel *brLabel = new QLabel();
- brLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
-
- sbar->addPermanentWidget(brLabel, 800);
- sbar->adjustSize();
-
      QToolBar *tBard = new QToolBar(tr("View Transport"));
 
      tBard->addWidget(playButton);
@@ -109,19 +106,18 @@ MainWindow::MainWindow(QWidget *parent) :
 
      addToolBar(tBard);
 
-
-     playButton->setShortcut(QKeySequence(Qt::Key_Space));
-     stopButton->setShortcut(QKeySequence(Qt::Key_S));
-     next->setShortcut(QKeySequence(Qt::Key_N));
-     previous->setShortcut(QKeySequence(Qt::Key_P));
-     QShortcut *mte = new QShortcut(QKeySequence(Qt::Key_M), this);
-     QShortcut *shwList = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L),this);
+     opVid->setShortcut(QKeySequence::Open);
+     quit->setShortcut(QKeySequence::Quit);
+     config->setShortcut(QKeySequence(Qt::CTRL+Qt::Key_P));
+     mte = new QShortcut(this);
+     shwList = new QShortcut(this);
 
        connect(playerD, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
        connect(seekr, SIGNAL(sliderMoved(int)),this, SLOT(setPosition(int)));
        connect(volSlide, SIGNAL(volumeChanged(int)),this, SLOT(changeVolume(int)));
        connect(playerD, SIGNAL(stateChanged(QMediaPlayer::State)),this, SLOT(mediaStateChanged(QMediaPlayer::State)));
        connect(playerD, SIGNAL(durationChanged(qint64)), this, SLOT(durationChanged(qint64)));
+       connect(playerD, SIGNAL(currentMediaChanged(QMediaContent)),this,SLOT(mediaChanged()));
 
        connect(stopButton, SIGNAL(clicked()),this,SLOT(stop()));
        connect(playButton, SIGNAL(clicked()),this, SLOT(play()));
@@ -132,6 +128,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
        viewer = new playlistView(this);
+        readSettings();
 
 }
 
@@ -170,6 +167,12 @@ void MainWindow::durationChanged(qint64 timed){
     seekr->setRange(0,timed);
 }
 
+void MainWindow::mediaChanged()
+{
+
+    setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
+}
+
 
 
 void MainWindow::mediaStateChanged(QMediaPlayer::State state)
@@ -177,11 +180,14 @@ void MainWindow::mediaStateChanged(QMediaPlayer::State state)
     switch(state) {
     case QMediaPlayer::PlayingState:
         playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+
         break;
     default:
         playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+
         break;
     }
+
 }
 
 
@@ -201,11 +207,14 @@ void MainWindow::mute(){
 void MainWindow::nextMedia()
 {
     playlist->next();
+
+    setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
 }
 
 void MainWindow::previousMedia()
 {
     playlist->previous();
+    setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
 }
 
 void MainWindow::showPlaylist()
@@ -219,8 +228,6 @@ void MainWindow::showPlaylist()
 
 void MainWindow::play(){
 
-  setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));  ;
-
 playerD->setVolume(100);
 
     switch(playerD->state()) {
@@ -231,6 +238,7 @@ playerD->setVolume(100);
             playerD->play();
             break;
     }
+    setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
 }
 
 void MainWindow::playd(QModelIndex index)
@@ -250,6 +258,7 @@ void MainWindow::stop(){
     playerD->setPosition(0);
     playerD->setVideoOutput(player->videoWidget);
     playlist->setCurrentIndex(0);
+    this->setWindowTitle("Cleps Video Player");
 }
 
 
@@ -257,6 +266,25 @@ void MainWindow::setPosition(int position){
 
    playerD->setPosition(position);
 
+}
+
+void MainWindow::readSettings()
+{
+     QSettings settings;
+
+     playButton->setShortcut(settings.value("shortcut/play_pause").value<QKeySequence>());
+     stopButton->setShortcut(settings.value("shortcut/stop").value<QKeySequence>());
+     next->setShortcut(settings.value("shortcut/nextmedia").value<QKeySequence>());
+     previous->setShortcut(settings.value("shortcut/previousmedia").value<QKeySequence>());
+     mte->setKey((settings.value("shortcut/mute").value<QKeySequence>()));
+     shwList->setKey((settings.value("shortcut/show_playlist").value<QKeySequence>()));
+}
+
+
+void MainWindow::viewSettings()
+{
+    settings_dialog *cfg = new settings_dialog(this);
+    cfg->show();
 }
 
 void MainWindow::positionChanged(qint64 position){

@@ -19,7 +19,7 @@
 #include "Cleps_MainWindow.h"
 #include "cleps_vidplayer.h"
 #include "settings_dialog.h"
-#include <QQuickView>
+
 
 
 MainWindow::MainWindow(QWidget *parent) :

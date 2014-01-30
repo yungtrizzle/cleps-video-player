@@ -18,7 +18,7 @@
 
 #include "settings_dialog.h"
 #include "shortcuts.h"
-
+#include "behaviour_settings.h"
 settings_dialog::settings_dialog(QWidget *parent) :
     QDialog(parent)
 {
@@ -33,7 +33,9 @@ settings_dialog::settings_dialog(QWidget *parent) :
         contents->setSpacing(12);
 
         tabs = new QStackedWidget;
-        tabs->addWidget(new shortcuts);
+         tabs->addWidget(new shortcuts);
+        tabs->addWidget(new behaviour_settings);
+
 
 
         QListWidgetItem *shortcutsButton = new QListWidgetItem(contents);
@@ -41,6 +43,14 @@ settings_dialog::settings_dialog(QWidget *parent) :
            shortcutsButton->setText(tr("Shortcuts"));
            shortcutsButton->setTextAlignment(Qt::AlignHCenter);
            shortcutsButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+           QListWidgetItem *behaveButton = new QListWidgetItem(contents);
+              behaveButton->setIcon(QIcon(":/icons/Setting.png"));
+              behaveButton->setText(tr("Behavior"));
+              behaveButton->setTextAlignment(Qt::AlignHCenter);
+              behaveButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+
 
         connect(contents,SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),this, SLOT(changeTab(QListWidgetItem*,QListWidgetItem*)));
 

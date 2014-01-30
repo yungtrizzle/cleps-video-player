@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/icons">
         <file>keyboard.png</file>
+        <file>Setting.png</file>
+        <file>cleps.png</file>
     </qresource>
 </RCC>

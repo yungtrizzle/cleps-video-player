@@ -61,8 +61,16 @@ void Cleps_VidPlayer::mouseDoubleClickEvent(QMouseEvent *event)
 void Cleps_VidPlayer::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu menu(this);
-    menu.addAction(tr("Open Playlist"), this->parent(), SLOT(showPlaylist()));
-//add menu items as needed
+    menu.addAction(tr("View Playlist"), this->parent(), SLOT(showPlaylist()));
+    menu.addAction(tr("Add Media"), this->parent(), SLOT(open()));
+    menu.addSeparator();
+    menu.addAction(tr("Play/Pause"),this->parent(), SLOT(play()));
+    menu.addAction(tr("Previous"),this->parent(), SLOT(previousMedia()));
+    menu.addAction(tr("Next"),this->parent(), SLOT(nextMedia()));
+    menu.addAction(tr("Stop"),this->parent(), SLOT(stop()));
+    menu.addSeparator();
+    menu.addAction(tr("Quit"),this->parent(), SLOT(quit()));
+
 
     menu.exec(event->globalPos());
 

@@ -19,6 +19,7 @@
 #include "Cleps_MainWindow.h"
 #include "cleps_vidplayer.h"
 #include "settings_dialog.h"
+#include <QQuickView>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -27,10 +28,11 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setGeometry(50,50,700,500);
 
     this->setWindowTitle("Cleps Video Player");
+    this->setWindowIcon(QIcon(":/icons/cleps.png"));
 
     playerD = new QMediaPlayer;
     playlist = new QMediaPlaylist;
-    playlist->setPlaybackMode(QMediaPlaylist::Loop);
+
     playerD->setPlaylist(playlist);
     player = new Cleps_VidPlayer(this);
 
@@ -43,19 +45,29 @@ MainWindow::MainWindow(QWidget *parent) :
     QAction *opVid = new QAction(tr("&Add to Playlist"), this);
     QAction *quit = new QAction(tr("&Quit"), this);
 
-
-     connect(opVid, SIGNAL(triggered()), this, SLOT(open()));
-     connect(quit, SIGNAL(triggered()), this, SLOT(quit()));
-
     fileMenu->addAction(opVid);
     fileMenu->addSeparator();
     fileMenu->addAction(quit);
 
     settingsMenu = new QMenu(tr("Tools"));
     QAction *config = new QAction(tr("Preferences"), this);
+    QAction *mdlist = new QAction(tr("View Playlist"), this);
 
-    connect(config,SIGNAL(triggered()),this,SLOT(viewSettings()));
+
+    QAction *mode1 = new QAction(tr("Sequential"), this);
+    QAction *mode2 = new QAction(tr("Repeat"), this);
+    QAction *mode3 = new QAction(tr("Repeat One"), this);
+    QAction *mode4 = new QAction(tr("Random"), this);
+
+    settingsMenu->addAction(mdlist);
+    playlistModeMenu = settingsMenu->addMenu(tr("Playlist Mode"));
+    settingsMenu->addSeparator();
     settingsMenu->addAction(config);
+
+    playlistModeMenu->addAction(mode1);
+    playlistModeMenu->addAction(mode2);
+    playlistModeMenu->addAction(mode3);
+    playlistModeMenu->addAction(mode4);
 
 
     gblMenu = new QMenuBar();
@@ -64,7 +76,6 @@ MainWindow::MainWindow(QWidget *parent) :
     gblMenu->ensurePolished();
 
     this->setMenuBar(gblMenu);
-
 
     playButton = new QToolButton();
     playButton->setToolTip(tr("Play/Pause"));
@@ -112,6 +123,11 @@ MainWindow::MainWindow(QWidget *parent) :
      mte = new QShortcut(this);
      shwList = new QShortcut(this);
 
+     connect(opVid, SIGNAL(triggered()), this, SLOT(open()));
+     connect(quit, SIGNAL(triggered()), this, SLOT(quit()));
+     connect(config,SIGNAL(triggered()),this,SLOT(viewSettings()));
+     connect(mdlist, SIGNAL(triggered()), this,SLOT(showPlaylist()));
+
        connect(playerD, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
        connect(seekr, SIGNAL(sliderMoved(int)),this, SLOT(setPosition(int)));
        connect(volSlide, SIGNAL(volumeChanged(int)),this, SLOT(changeVolume(int)));
@@ -126,10 +142,13 @@ MainWindow::MainWindow(QWidget *parent) :
        connect(mte,SIGNAL(activated()),this,SLOT(mute()));
        connect(shwList, SIGNAL(activated()),this, SLOT(showPlaylist()));
 
+      connect(mode1,SIGNAL(triggered()),this,SLOT(setSequential()));
+      connect(mode2,SIGNAL(triggered()),this,SLOT(setRepeat()));
+      connect(mode3,SIGNAL(triggered()),this,SLOT(setRepeatOne()));
+      connect(mode1,SIGNAL(triggered()),this,SLOT(setRandom()));
 
        viewer = new playlistView(this);
         readSettings();
-
 }
 
 void MainWindow::clear()
@@ -169,11 +188,18 @@ void MainWindow::durationChanged(qint64 timed){
 
 void MainWindow::mediaChanged()
 {
-
+    if(playlist->currentMedia().isNull()){
+        setWindowTitle("Cleps Video Player");
+    }else{
     setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
+    }
+      if(notifyFlag->contains("nat")){
+          cleps->showMessage("Cleps Video Player", plist.value(playlist->currentIndex()));
+      }else{
+
+         // showOsd(plist.value(playlist->currentIndex()));
+      }
 }
-
-
 
 void MainWindow::mediaStateChanged(QMediaPlayer::State state)
 {
@@ -189,8 +215,6 @@ void MainWindow::mediaStateChanged(QMediaPlayer::State state)
     }
 
 }
-
-
 
 void MainWindow::mute(){
 
@@ -208,14 +232,22 @@ void MainWindow::nextMedia()
 {
     playlist->next();
 
+    if(playlist->currentMedia().isNull()){
+        setWindowTitle("Cleps Video Player");
+    }else{
+
     setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
-}
+}}
 
 void MainWindow::previousMedia()
 {
     playlist->previous();
+
+    if(playlist->currentMedia().isNull()){
+        setWindowTitle("Cleps Video Player");
+    }else{
     setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
-}
+}}
 
 void MainWindow::showPlaylist()
 {
@@ -224,6 +256,18 @@ void MainWindow::showPlaylist()
     viewer->activateWindow();
 }
 
+void MainWindow::loadMedia(QString media)
+{
+
+    if (!media.isEmpty()){
+
+       playlist->addMedia(QUrl::fromLocalFile((media)));
+
+        media = media.section('/', -1);
+       plist.append(media);
+       viewer->setPlaylist(plist);
+    }
+}
 
 
 void MainWindow::play(){
@@ -238,7 +282,13 @@ playerD->setVolume(100);
             playerD->play();
             break;
     }
+
+    if(playlist->currentMedia().isNull()){
+        setWindowTitle("Cleps Video Player");
+    }else{
     setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
+
+    }
 }
 
 void MainWindow::playd(QModelIndex index)
@@ -248,7 +298,6 @@ void MainWindow::playd(QModelIndex index)
     playerD->setPosition(0);
     playerD->setVideoOutput(player->videoWidget);
     play();
-
 }
 
 
@@ -268,6 +317,48 @@ void MainWindow::setPosition(int position){
 
 }
 
+void MainWindow::setRandom()
+{
+    playlist->setPlaybackMode(QMediaPlaylist::Random);
+}
+
+void MainWindow::setRepeat()
+{
+    playlist->setPlaybackMode(QMediaPlaylist::Loop);
+}
+
+void MainWindow::setRepeatOne()
+{
+    playlist->setPlaybackMode(QMediaPlaylist::CurrentItemInLoop);
+}
+
+void MainWindow::setSequential()
+{
+    playlist->setPlaybackMode(QMediaPlaylist::Sequential);
+}
+
+void MainWindow::setupTray()
+{
+    cleps=new QSystemTrayIcon(QIcon(":/icons/cleps.png"),this);
+    ctxt = new QMenu(this);
+    ctxt->addAction(tr("Play/Pause"),this, SLOT(play()));
+    ctxt->addAction(tr("Previous"),this, SLOT(previousMedia()));
+    ctxt->addAction(tr("Next"),this, SLOT(nextMedia()));
+    ctxt->addAction(tr("Stop"),this, SLOT(stop()));
+    ctxt->addSeparator();
+    ctxt->addAction(tr("Quit"),this, SLOT(quit()));
+
+    connect(cleps,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(toggleHideWindow(QSystemTrayIcon::ActivationReason)));
+
+    cleps->setContextMenu(ctxt);
+    cleps->show();
+}
+/*
+void MainWindow::showOsd(QString text)
+{
+
+} */
+
 void MainWindow::readSettings()
 {
      QSettings settings;
@@ -278,6 +369,32 @@ void MainWindow::readSettings()
      previous->setShortcut(settings.value("shortcut/previousmedia").value<QKeySequence>());
      mte->setKey((settings.value("shortcut/mute").value<QKeySequence>()));
      shwList->setKey((settings.value("shortcut/show_playlist").value<QKeySequence>()));
+
+     if(settings.value("system/tray").toInt() != 0){
+
+         setupTray();
+     }
+
+     if(settings.value("system/notify").toInt() != 0){
+
+         notifyFlag = new QString(settings.value("system/notify_type").toString());
+     }
+}
+
+void MainWindow::toggleHideWindow(QSystemTrayIcon::ActivationReason reason)
+{
+
+    if(reason == QSystemTrayIcon::Trigger){
+
+        switch(this->isVisible()){
+        case true: this->setHidden(true);
+                    break;
+        case false: this->show();
+                    break;
+        }
+
+    }
+
 }
 
 

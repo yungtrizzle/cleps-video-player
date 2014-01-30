@@ -44,6 +44,7 @@ public slots:
     void nextMedia();
     void previousMedia();
     void showPlaylist();
+    void loadMedia(QString media);
 
 
 private slots:
@@ -53,14 +54,22 @@ private slots:
     void mediaStateChanged(QMediaPlayer::State);
     void positionChanged(qint64);
     void setPosition(int);
+    void setRandom();
+    void setRepeat();
+    void setRepeatOne();
+    void setSequential();
+    void setupTray();
+   // void showOsd(QString text);
     void readSettings();
+    void toggleHideWindow(QSystemTrayIcon::ActivationReason reason);
     void viewSettings();
+
 
 private:
     QMediaPlayer *playerD;
     QMediaPlaylist *playlist;
     QMenuBar *gblMenu;
-    QMenu *fileMenu, *settingsMenu;
+    QMenu *fileMenu, *settingsMenu, *ctxt, *playlistModeMenu;
     QStringList plist;
     Cleps_VidPlayer *player;
     QToolButton *playButton, *stopButton, *next, *previous;
@@ -68,7 +77,8 @@ private:
     volumeSlider *volSlide;
     playlistView *viewer;
     QShortcut *mte, *shwList;
-
+    QSystemTrayIcon *cleps;
+    QString *notifyFlag;
 
 };
 

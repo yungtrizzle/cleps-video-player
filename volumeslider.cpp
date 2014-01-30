@@ -1,4 +1,3 @@
-#include "volumeslider.h"
 /******************************************************************************
 *   Cleps Video Player. Simply a media player, no more, no less.              *
 *   Copyright (C) 2014  Eshton Robateau <eshtonrob@gmail.com>                 *
@@ -17,6 +16,7 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 *******************************************************************************/
 
+#include "volumeslider.h"
 #include <QBoxLayout>
 #include <QWidgetAction>
 #include <QStyle>

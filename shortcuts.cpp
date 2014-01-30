@@ -1,3 +1,22 @@
+/******************************************************************************
+*   Cleps Video Player. Simply a media player, no more, no less.              *
+*   Copyright (C) 2014  Eshton Robateau <eshtonrob@gmail.com>                 *
+*                                                                             *
+*    This program is free software: you can redistribute it and/or modify     *
+*    it under the terms of the GNU General Public License as published by     *
+*    the Free Software Foundation, either version 3 of the License, or        *
+*    (at your option) any later version.                                      *
+*                                                                             *
+*    This program is distributed in the hope that it will be useful,          *
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of           *
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            *
+*    GNU General Public License for more details.                             *
+*                                                                             *
+*    You should have received a copy of the GNU General Public License        *
+*    along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
+*******************************************************************************/
+
+
 #include "shortcuts.h"
 
 shortcuts::shortcuts(QWidget *parent) :
@@ -23,7 +42,7 @@ shortcuts::shortcuts(QWidget *parent) :
     QLabel *lbld = new QLabel(tr("<b>Media Shortcuts</b>"));
 
     QPushButton *setNewCut = new QPushButton(tr("Change ShortCut"));
-    QPushButton *apply = new QPushButton(tr("Reset Defaults"));
+    QPushButton *apply = new QPushButton(tr("Reset"));
 
     QBoxLayout *hLay = new QHBoxLayout;
     hLay->addStretch(1);
@@ -54,7 +73,7 @@ void shortcuts::defaultData()
     }
 
     for(int i = 0; i<6;++i){
-       QStandardItem *item2 = new QStandardItem(QString(tr("Using Defaults")));
+       QStandardItem *item2 = new QStandardItem(QString(tr(" ")));
        model->setItem(i, 2, item2);
     }
 

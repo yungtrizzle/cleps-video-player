@@ -16,40 +16,33 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 *******************************************************************************/
 
-#include "cleps_vidplayer.h"
-#include "Cleps_MainWindow.h"
-#include <QApplication>
 
+#ifndef BEHAVIOUR_SETTINGS_H
+#define BEHAVIOUR_SETTINGS_H
 
-int main(int argc, char *argv[])
+#include <QWidget>
+#include <QtWidgets>
+
+class behaviour_settings : public QWidget
 {
-    QApplication a(argc, argv);
+    Q_OBJECT
+public:
+    explicit behaviour_settings(QWidget *parent = 0);
 
-    a.setOrganizationName("Cleps");
-    a.setApplicationName("Cleps Video Player");
+signals:
 
-    QString locale = QLocale::system().name();
+public slots:
+    void ntfyType(int state);
+    void tray(int state);
+    void writeAll();
+private slots:
+    void readSettings();
 
-    QTranslator translator;
-    translator.load(QString("Cleps_") + locale);
-    a.installTranslator(&translator);
+private:
+    QGroupBox *bhve;
+    QRadioButton *osdNoyify, *nativeNotify;
+    QCheckBox *trCon, *notifi;
+    QMap<QString,QVariant> *flags;
+};
 
-    QCommandLineParser parser;
-    parser.setApplicationDescription(QApplication::tr("A small video player."));
-    parser.addHelpOption();
-    parser.addPositionalArgument("filename", QApplication::tr("A media file to play."));
-
-    parser.process(a);
-     const QStringList args = parser.positionalArguments();
-
-      MainWindow w;
-
-     foreach(const QString &str, args){
-         w.loadMedia(str);
-     }
-
-    w.show();
-    w.play();
-
-    return a.exec();
-}
+#endif // BEHAVIOUR_SETTINGS_H

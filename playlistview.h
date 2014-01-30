@@ -31,6 +31,7 @@ public:
     explicit playlistView(QWidget *parent = 0);
     void setPlaylist(QStringList list);
     void contextMenuEvent(QContextMenuEvent *event);
+    void closeEvent(QCloseEvent *event);
 
 signals:
 

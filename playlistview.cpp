@@ -50,7 +50,23 @@ void playlistView::contextMenuEvent(QContextMenuEvent *event)
     QMenu menu(this);
     menu.addAction(tr("Add Media"), this->parent(), SLOT(open()));
     menu.addAction(tr("Clear Playlist"), this->parent(), SLOT(clear()));
+    menu.addSeparator();
+    menu.addAction(tr("Play/Pause"),this->parent(), SLOT(play()));
+    menu.addAction(tr("Previous"),this->parent(), SLOT(previousMedia()));
+    menu.addAction(tr("Next"),this->parent(), SLOT(nextMedia()));
+    menu.addAction(tr("Stop"),this->parent(), SLOT(stop()));
+    menu.addSeparator();
+    menu.addAction(tr("Quit"),this->parent(), SLOT(quit()));
+
     menu.exec(event->globalPos());
+
+}
+
+void playlistView::closeEvent(QCloseEvent *event)
+{
+
+    hide();
+    event->ignore();
 
 }
 

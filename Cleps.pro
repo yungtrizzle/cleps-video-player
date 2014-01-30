@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui multimedia multimediawidgets
+QT       += core gui multimedia multimediawidgets quick
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -19,7 +19,8 @@ SOURCES += main.cpp\
     playlistview.cpp \
     settings_dialog.cpp \
     shortcuteditor.cpp \
-    shortcuts.cpp
+    shortcuts.cpp \
+    behaviour_settings.cpp
 
 HEADERS  += cleps_vidplayer.h \
     Cleps_MainWindow.h \
@@ -27,10 +28,13 @@ HEADERS  += cleps_vidplayer.h \
     playlistview.h \
     settings_dialog.h \
     shortcuteditor.h \
-    shortcuts.h
+    shortcuts.h \
+    behaviour_settings.h
 
 TRANSLATIONS =
 
 RESOURCES += \
     icons.qrc
+
+OTHER_FILES +=
 

@@ -71,10 +71,14 @@ MainWindow::MainWindow(QWidget *parent) :
     playlistModeMenu->addAction(mode3);
     playlistModeMenu->addAction(mode4);
 
+    about = new QMenu(tr("About"));
+    about->addAction(tr("About Cleps Video Player"), this, SLOT(aboutIt()));
+
 
     gblMenu = new QMenuBar();
     gblMenu->addMenu(fileMenu);
     gblMenu->addMenu(settingsMenu);
+    gblMenu->addMenu(about);
     gblMenu->ensurePolished();
 
     this->setMenuBar(gblMenu);
@@ -98,6 +102,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
  seekr = new QSlider(Qt::Horizontal);
  seekr->setRange(0,0);
+ seekr->setPageStep(1);
 
  volSlide = new volumeSlider;
  volSlide->setValue(100);
@@ -132,6 +137,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
        connect(playerD, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
        connect(seekr, SIGNAL(sliderMoved(int)),this, SLOT(setPosition(int)));
+       connect(seekr, SIGNAL(valueChanged(int)), this, SLOT(seekNewPosition(int)));
        connect(volSlide, SIGNAL(volumeChanged(int)),this, SLOT(changeVolume(int)));
        connect(playerD, SIGNAL(stateChanged(QMediaPlayer::State)),this, SLOT(mediaStateChanged(QMediaPlayer::State)));
        connect(playerD, SIGNAL(durationChanged(qint64)), this, SLOT(durationChanged(qint64)));
@@ -150,7 +156,23 @@ MainWindow::MainWindow(QWidget *parent) :
       connect(mode4,SIGNAL(triggered()),this,SLOT(setRandom()));
 
        viewer = new playlistView(this);
-        readSettings();
+       trayVisible = false; notifyFlag=false; runbckgd = false;
+       readSettings();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+   if(runbckgd){
+       setHidden(true);
+       event->ignore();
+   }else{
+
+       event->accept();
+       close();
+   }
+
+
+
 }
 
 void MainWindow::clear()
@@ -194,14 +216,12 @@ void MainWindow::mediaChanged()
         setWindowTitle("Cleps Video Player");
     }else{
     setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
-    }
-      if(notifyFlag->contains("nat")){
+
+
+     if(notifyFlag){
           showNativeNotify();
-
-      }else{
-
-         // showOsd();
-      }
+}
+}
 }
 
 void MainWindow::mediaStateChanged(QMediaPlayer::State state)
@@ -272,6 +292,15 @@ void MainWindow::loadMedia(QString media)
     }
 }
 
+void MainWindow::aboutIt()
+{
+    QString title = "About Cleps";
+        QString text = "Cleps Video Player is a simply video player, no more, no less. \nyungtrizzle (C)2014";
+
+        QMessageBox::about(this, title, text);
+
+}
+
 
 void MainWindow::play(){
 
@@ -333,6 +362,7 @@ void MainWindow::setRepeat()
 void MainWindow::setRepeatOne()
 {
     playlist->setPlaybackMode(QMediaPlaylist::CurrentItemInLoop);
+
 }
 
 void MainWindow::setSequential()
@@ -342,6 +372,8 @@ void MainWindow::setSequential()
 
 void MainWindow::setupTray()
 {
+    if(!trayVisible){
+
     cleps=new QSystemTrayIcon(QIcon(":/icons/cleps.png"),this);
     ctxt = new QMenu(this);
     ctxt->addAction(tr("Play/Pause"),this, SLOT(play()));
@@ -355,6 +387,7 @@ void MainWindow::setupTray()
 
     cleps->setContextMenu(ctxt);
     cleps->show();
+    }
 }
 
 void MainWindow::showNativeNotify()
@@ -367,9 +400,9 @@ void MainWindow::showNativeNotify()
     hints["image_data"] = QImage(":/icons/cleps.png");
     QList<QVariant> argumentList;
       argumentList << "Cleps"; //app_name
-      argumentList << (int)0; // replace_id
+      argumentList << (uint)0; // replace_id
       argumentList << ""; // app_icon
-      argumentList << ""; // summary
+      argumentList << "Cleps Video Player"; // summary
       argumentList << plist.value(playlist->currentIndex()); // body
       argumentList << QStringList(); // actions
       argumentList << hints; // hints
@@ -381,11 +414,7 @@ void MainWindow::showNativeNotify()
 
                     qDebug() << reply.error();
 }
-           /*
-void MainWindow::showOsd(QString text)
-{
 
-} */
 
 void MainWindow::readSettings()
 {
@@ -401,12 +430,20 @@ void MainWindow::readSettings()
      if(settings.value("system/tray").toInt() != 0){
 
          setupTray();
+         trayVisible = true;
      }
 
      if(settings.value("system/notify").toInt() != 0){
 
-         notifyFlag = new QString(settings.value("system/notify_type").toString());
+         notifyFlag = true;
      }
+
+         if(settings.value("system/run_background").toInt() != 0){
+         runbckgd = true;
+     }else{
+             runbckgd = false;
+         }
+
 }
 
 void MainWindow::toggleHideWindow(QSystemTrayIcon::ActivationReason reason)
@@ -438,9 +475,34 @@ void MainWindow::positionChanged(qint64 position){
     seekr->setValue(position);
 }
 
+void MainWindow::seekNewPosition(int newPos)
+{
+    // Make slider to follow the mouse directly and not by pageStep steps
+        Qt::MouseButtons btns = QApplication::mouseButtons();
+        QPoint localMousePos = seekr->mapFromGlobal(QCursor::pos());
+        bool clickOnSlider = (btns & Qt::LeftButton) &&
+                             (localMousePos.x() >= 0 && localMousePos.y() >= 0 &&
+                              localMousePos.x() < seekr->size().width() &&
+                              localMousePos.y() < seekr->size().height());
+        if (clickOnSlider)
+        {
+            // Attention! The following works only for Horizontal, Left-to-right sliders
+            float posRatio = localMousePos.x() / (float )seekr->size().width();
+            int sliderRange = seekr->maximum() - seekr->minimum();
+            int sliderPosUnderMouse = seekr->minimum() + sliderRange * posRatio;
+            if (sliderPosUnderMouse != newPos)
+            {
+                seekr->setValue(sliderPosUnderMouse);
+                setPosition(sliderPosUnderMouse);
+
+}
+}
+}
+
 void MainWindow::quit(){
 
     this->close();
+
 }
 
 

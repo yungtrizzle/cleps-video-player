@@ -32,6 +32,7 @@ public:
 signals:
 
 public slots:
+    void bckgd(int stea);
     void ntfyType(int state);
     void tray(int state);
     void writeAll();
@@ -39,9 +40,8 @@ private slots:
     void readSettings();
 
 private:
-    QGroupBox *bhve;
-    QRadioButton *osdNoyify, *nativeNotify;
-    QCheckBox *trCon, *notifi;
+
+    QCheckBox *trCon, *notifi, *runBhd;
     QMap<QString,QVariant> *flags;
 };
 

@@ -29,6 +29,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = 0);
+    void closeEvent(QCloseEvent *event);
 
 
 signals:
@@ -48,11 +49,13 @@ public slots:
 
 
 private slots:
+    void aboutIt();
     void changeVolume(int);
     void durationChanged(qint64);
     void mediaChanged();
     void mediaStateChanged(QMediaPlayer::State);
     void positionChanged(qint64);
+    void seekNewPosition(int newPos);
     void setPosition(int);
     void setRandom();
     void setRepeat();
@@ -60,7 +63,6 @@ private slots:
     void setSequential();
     void setupTray();
     void showNativeNotify();
-   // void showOsd(QString text);
     void readSettings();
     void toggleHideWindow(QSystemTrayIcon::ActivationReason reason);
     void viewSettings();
@@ -70,7 +72,7 @@ private:
     QMediaPlayer *playerD;
     QMediaPlaylist *playlist;
     QMenuBar *gblMenu;
-    QMenu *fileMenu, *settingsMenu, *ctxt, *playlistModeMenu;
+    QMenu *fileMenu, *settingsMenu, *ctxt, *playlistModeMenu, *about;
     QStringList plist;
     Cleps_VidPlayer *player;
     QToolButton *playButton, *stopButton, *next, *previous;
@@ -79,7 +81,7 @@ private:
     playlistView *viewer;
     QShortcut *mte, *shwList;
     QSystemTrayIcon *cleps;
-    QString *notifyFlag;
+    bool notifyFlag, trayVisible, runbckgd;
 
 };
 

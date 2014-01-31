@@ -8,7 +8,7 @@ QT       += core gui multimedia multimediawidgets dbus
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = Cleps
+TARGET = cleps
 TEMPLATE = app
 
 

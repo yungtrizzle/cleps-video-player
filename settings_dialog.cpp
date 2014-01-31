@@ -70,5 +70,13 @@ void settings_dialog::changeTab(QListWidgetItem *current, QListWidgetItem *previ
     if (!current)
             current = previous;
 
-        tabs->setCurrentIndex(contents->row(current));
+    tabs->setCurrentIndex(contents->row(current));
+}
+
+void settings_dialog::closeEvent(QCloseEvent *event)
+{
+
+    emit accepted();
+    event->accept();
+
 }

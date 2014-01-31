@@ -19,7 +19,9 @@
 #include "Cleps_MainWindow.h"
 #include "cleps_vidplayer.h"
 #include "settings_dialog.h"
-
+#include <QDBusInterface>
+#include <QDBusReply>
+#include <QDBusMetaType>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -145,7 +147,7 @@ MainWindow::MainWindow(QWidget *parent) :
       connect(mode1,SIGNAL(triggered()),this,SLOT(setSequential()));
       connect(mode2,SIGNAL(triggered()),this,SLOT(setRepeat()));
       connect(mode3,SIGNAL(triggered()),this,SLOT(setRepeatOne()));
-      connect(mode1,SIGNAL(triggered()),this,SLOT(setRandom()));
+      connect(mode4,SIGNAL(triggered()),this,SLOT(setRandom()));
 
        viewer = new playlistView(this);
         readSettings();
@@ -194,10 +196,11 @@ void MainWindow::mediaChanged()
     setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
     }
       if(notifyFlag->contains("nat")){
-          cleps->showMessage("Cleps Video Player", plist.value(playlist->currentIndex()));
+          showNativeNotify();
+
       }else{
 
-         // showOsd(plist.value(playlist->currentIndex()));
+         // showOsd();
       }
 }
 
@@ -287,8 +290,8 @@ playerD->setVolume(100);
         setWindowTitle("Cleps Video Player");
     }else{
     setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
-
     }
+
 }
 
 void MainWindow::playd(QModelIndex index)
@@ -353,7 +356,32 @@ void MainWindow::setupTray()
     cleps->setContextMenu(ctxt);
     cleps->show();
 }
-/*
+
+void MainWindow::showNativeNotify()
+{
+    //argumenList code from https://github.com/rohieb/StratumsphereTrayIcon
+
+    qDBusRegisterMetaType<QImage>();
+
+    QVariantMap hints;
+    hints["image_data"] = QImage(":/icons/cleps.png");
+    QList<QVariant> argumentList;
+      argumentList << "Cleps"; //app_name
+      argumentList << (int)0; // replace_id
+      argumentList << ""; // app_icon
+      argumentList << ""; // summary
+      argumentList << plist.value(playlist->currentIndex()); // body
+      argumentList << QStringList(); // actions
+      argumentList << hints; // hints
+      argumentList << (int)-1;
+
+
+    QDBusInterface notfy("org.freedesktop.Notifications", "/org/freedesktop/Notifications", "org.freedesktop.Notifications");
+    QDBusReply<int> reply = notfy.callWithArgumentList(QDBus::AutoDetect, "Notify", argumentList);
+
+                    qDebug() << reply.error();
+}
+           /*
 void MainWindow::showOsd(QString text)
 {
 
@@ -401,6 +429,7 @@ void MainWindow::toggleHideWindow(QSystemTrayIcon::ActivationReason reason)
 void MainWindow::viewSettings()
 {
     settings_dialog *cfg = new settings_dialog(this);
+    connect(cfg, SIGNAL(accepted()),this, SLOT(readSettings()));
     cfg->show();
 }
 
@@ -412,4 +441,63 @@ void MainWindow::positionChanged(qint64 position){
 void MainWindow::quit(){
 
     this->close();
+}
+
+
+
+/**
+* Automatic marshaling of a QImage for org.freedesktop.Notifications.Notify
+*
+* This function is from the Clementine project (see
+* http://www.clementine-player.org) and licensed under the GNU General Public
+* License, version 3 or later.
+*
+* Copyright 2010, David Sansome <me@davidsansome.com>
+*/
+QDBusArgument& operator<<(QDBusArgument& arg, const QImage& image) {
+  if(image.isNull()) {
+    arg.beginStructure();
+    arg << 0 << 0 << 0 << false << 0 << 0 << QByteArray();
+    arg.endStructure();
+    return arg;
+  }
+
+  QImage scaled = image.scaledToHeight(100, Qt::SmoothTransformation);
+  scaled = scaled.convertToFormat(QImage::Format_ARGB32);
+
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+  // ABGR -> ARGB
+  QImage i = scaled.rgbSwapped();
+#else
+  // ABGR -> GBAR
+  QImage i(scaled.size(), scaled.format());
+  for (int y = 0; y < i.height(); ++y) {
+    QRgb* p = (QRgb*) scaled.scanLine(y);
+    QRgb* q = (QRgb*) i.scanLine(y);
+    QRgb* end = p + scaled.width();
+    while (p < end) {
+      *q = qRgba(qGreen(*p), qBlue(*p), qAlpha(*p), qRed(*p));
+      p++;
+      q++;
+    }
+  }
+#endif
+
+  arg.beginStructure();
+  arg << i.width();
+  arg << i.height();
+  arg << i.bytesPerLine();
+  arg << i.hasAlphaChannel();
+  int channels = i.isGrayscale() ? 1 : (i.hasAlphaChannel() ? 4 : 3);
+  arg << i.depth() / channels;
+  arg << channels;
+  arg << QByteArray(reinterpret_cast<const char*>(i.bits()), i.byteCount());
+  arg.endStructure();
+  return arg;
+}
+
+const QDBusArgument& operator>>(const QDBusArgument& arg, QImage&) {
+  // This is needed to link but shouldn't be called.
+  Q_ASSERT(0);
+  return arg;
 }

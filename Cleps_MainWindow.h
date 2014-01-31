@@ -59,6 +59,7 @@ private slots:
     void setRepeatOne();
     void setSequential();
     void setupTray();
+    void showNativeNotify();
    // void showOsd(QString text);
     void readSettings();
     void toggleHideWindow(QSystemTrayIcon::ActivationReason reason);

@@ -36,6 +36,7 @@ signals:
 public slots:
 
     void changeTab(QListWidgetItem *current, QListWidgetItem *previous);
+    void closeEvent(QCloseEvent *event);
 
 private:
 

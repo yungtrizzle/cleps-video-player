@@ -36,8 +36,6 @@ settings_dialog::settings_dialog(QWidget *parent) :
          tabs->addWidget(new shortcuts);
         tabs->addWidget(new behaviour_settings);
 
-
-
         QListWidgetItem *shortcutsButton = new QListWidgetItem(contents);
            shortcutsButton->setIcon(QIcon(":/icons/keyboard.png"));
            shortcutsButton->setText(tr("Shortcuts"));

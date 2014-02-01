@@ -42,12 +42,12 @@ shortcuts::shortcuts(QWidget *parent) :
     QLabel *lbld = new QLabel(tr("<b>Media Shortcuts</b>"));
 
     QPushButton *setNewCut = new QPushButton(tr("Change ShortCut"));
-    QPushButton *apply = new QPushButton(tr("Reset"));
+    QPushButton *reset = new QPushButton(tr("Reset"));
 
     QBoxLayout *hLay = new QHBoxLayout;
     hLay->addStretch(1);
     hLay->addWidget(setNewCut);
-    hLay->addWidget(apply);
+    hLay->addWidget(reset);
 
     QBoxLayout *vlay = new QVBoxLayout;
     vlay->addWidget(lbld);
@@ -57,7 +57,7 @@ shortcuts::shortcuts(QWidget *parent) :
     setLayout(vlay);
 
     connect(setNewCut,SIGNAL(clicked()),this,SLOT(keySequenceInput()));
-    connect(apply,SIGNAL(clicked()),this,SLOT(resetData()));
+    connect(reset,SIGNAL(clicked()),this,SLOT(resetData()));
 
 }
 void shortcuts::defaultData()
@@ -83,9 +83,19 @@ void shortcuts::keySequenceInput()
 {
      QSettings settings;
     edit = new shortcutEditor(this);
-    int row = scutTable->selectionModel()->selection().indexes().first().row();
+   int row= -1;
+   QModelIndexList lst =   scutTable->selectionModel()->selection().indexes();
+
+
+        if(lst.isEmpty()){
+      return;
+
+    }else{
+            row = lst.first().row();
 
     edit->exec();
+
+    if(!seq.isEmpty()){
 
     model->item(row, 2)->setText(seq.toString());
     scutTable->setModel(model);
@@ -102,8 +112,10 @@ void shortcuts::keySequenceInput()
        settings.setValue("shortcut/play_pause", seq);
    }else{
        settings.setValue("shortcut/"+ key, seq);
-   }
 
+   }
+   }
+    }
 }
 
 void shortcuts::resetData()
@@ -130,10 +142,14 @@ void shortcuts::resetData()
              settings.setValue("shortcut/"+ key, value);
          }
         }
+
+     this->parentWidget()->parentWidget()->close();
+
  }
 
 void shortcuts::readSequence(QKeySequence keySequence)
 {
+
  seq=keySequence;
 
 }

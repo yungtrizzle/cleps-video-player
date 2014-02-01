@@ -41,8 +41,8 @@ behaviour_settings::behaviour_settings(QWidget *parent) :
  vlay->addWidget(trCon);
  vlay->addWidget(runBhd);
  vlay->addWidget(notifi);
- vlay->insertStretch(12);
  vlay->addLayout(hlay);
+ vlay->insertStretch(12);
 
  setLayout(vlay);
  flags = new QMap<QString, QVariant>;
@@ -85,6 +85,8 @@ void behaviour_settings::writeAll(){
     settings.setValue("system/notify", flags->value("Notify",0));
     settings.setValue("system/tray", flags->value("Tray",0));
     settings.setValue("system/run_background", flags->value("Run_Background",0));
+
+    this->parentWidget()->parentWidget()->close();
 
 }
 

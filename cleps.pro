@@ -36,6 +36,6 @@ TRANSLATIONS =
 RESOURCES += \
     icons.qrc
 
-FORMS +=
+
 
 

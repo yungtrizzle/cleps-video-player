@@ -44,6 +44,7 @@ public slots:
     void mute();
     void nextMedia();
     void previousMedia();
+    void removeMedia(QList<int> list);
     void showPlaylist();
     void loadMedia(QString media);
 
@@ -69,6 +70,7 @@ private slots:
 
 
 private:
+    QAction *opVid,*config,*mdlist,*mode1, *mode2, *mode3, *mode4;
     QMediaPlayer *playerD;
     QMediaPlaylist *playlist;
     QMenuBar *gblMenu;
@@ -79,7 +81,7 @@ private:
     QSlider *seekr;
     volumeSlider *volSlide;
     playlistView *viewer;
-    QShortcut *mte, *shwList;
+    QShortcut *mte, *shwList, *ply, *stp, *nxt,*prv;
     QSystemTrayIcon *cleps;
     bool notifyFlag, trayVisible, runbckgd;
 

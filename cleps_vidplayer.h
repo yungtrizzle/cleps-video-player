@@ -35,6 +35,7 @@ public:
     QVideoWidget *videoWidget;
 
 public slots:
+   void context(QPoint pos);
 
 private slots:
 
@@ -43,6 +44,7 @@ private slots:
    void contextMenuEvent(QContextMenuEvent *event);
 
 private:
+
 
 };
 

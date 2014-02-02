@@ -25,6 +25,7 @@ Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
 
 {
     videoWidget = new QVideoWidget;
+    videoWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
     QBoxLayout *mreLayout = new QHBoxLayout;
     mreLayout->setMargin(0);
@@ -36,9 +37,10 @@ Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
 
        setLayout(layout);
 
+      QShortcut *fll = new QShortcut(QKeySequence(Qt::Key_F11), videoWidget);
 
-       QShortcut *fll = new QShortcut(QKeySequence::FullScreen, videoWidget);
        connect(fll,SIGNAL(activated()),this,SLOT(fullScreen()));
+       connect(videoWidget, SIGNAL(customContextMenuRequested(QPoint)),this, SLOT(context(QPoint)));
 
 }
 
@@ -49,6 +51,7 @@ void Cleps_VidPlayer::fullScreen(){
         videoWidget->setFullScreen(false);
     }else {
         videoWidget->setFullScreen(true);
+
     }
 }
 
@@ -78,5 +81,24 @@ void Cleps_VidPlayer::contextMenuEvent(QContextMenuEvent *event)
 
 Cleps_VidPlayer::~Cleps_VidPlayer()
 {
+
+}
+
+void Cleps_VidPlayer::context(QPoint pos)
+{
+
+    QMenu menu(this);
+    menu.addAction(tr("View Playlist"), this->parent(), SLOT(showPlaylist()));
+    menu.addAction(tr("Add Media"), this->parent(), SLOT(open()));
+    menu.addSeparator();
+    menu.addAction(tr("Play/Pause"),this->parent(), SLOT(play()));
+    menu.addAction(tr("Previous"),this->parent(), SLOT(previousMedia()));
+    menu.addAction(tr("Next"),this->parent(), SLOT(nextMedia()));
+    menu.addAction(tr("Stop"),this->parent(), SLOT(stop()));
+    menu.addSeparator();
+    menu.addAction(tr("Quit"),this->parent(), SLOT(quit()));
+
+
+    menu.exec(pos);
 
 }

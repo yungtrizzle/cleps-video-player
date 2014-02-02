@@ -29,13 +29,16 @@ class playlistView : public QDialog
     Q_OBJECT
 public:
     explicit playlistView(QWidget *parent = 0);
+
     void setPlaylist(QStringList list);
     void contextMenuEvent(QContextMenuEvent *event);
     void closeEvent(QCloseEvent *event);
 
 signals:
+    void removeIndex(QList<int>);
 
 public slots:
+     void remove();
 
 private:
 

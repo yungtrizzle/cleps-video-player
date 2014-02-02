@@ -44,22 +44,29 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     fileMenu = new QMenu(tr("&Media"));
-    QAction *opVid = new QAction(tr("&Add to Playlist"), this);
-    QAction *quit = new QAction(tr("&Quit"), this);
+    opVid = new QAction(tr("&Add to Playlist"), this);
+  QAction *quit = new QAction(tr("&Quit"), this);
 
     fileMenu->addAction(opVid);
     fileMenu->addSeparator();
     fileMenu->addAction(quit);
 
     settingsMenu = new QMenu(tr("Tools"));
-    QAction *config = new QAction(tr("Preferences"), this);
-    QAction *mdlist = new QAction(tr("View Playlist"), this);
+    config = new QAction(tr("Preferences"), this);
+    mdlist = new QAction(tr("View Playlist"), this);
+    mdlist->setCheckable(true);
 
 
-    QAction *mode1 = new QAction(tr("Sequential"), this);
-    QAction *mode2 = new QAction(tr("Repeat"), this);
-    QAction *mode3 = new QAction(tr("Repeat One"), this);
-    QAction *mode4 = new QAction(tr("Random"), this);
+    mode1 = new QAction(tr("Sequential"), this);
+    mode1->setCheckable(true);
+    mode1->setChecked(true);
+    mode2 = new QAction(tr("Repeat"), this);
+    mode2->setCheckable(true);
+    mode3 = new QAction(tr("Repeat One"), this);
+    mode3->setCheckable(true);
+    mode4 = new QAction(tr("Random"), this);
+    mode4->setCheckable(true);
+
 
     settingsMenu->addAction(mdlist);
     playlistModeMenu = settingsMenu->addMenu(tr("Playlist Mode"));
@@ -125,10 +132,25 @@ MainWindow::MainWindow(QWidget *parent) :
      addToolBar(tBard);
 
      opVid->setShortcut(QKeySequence::Open);
+     opVid->setShortcutContext(Qt::ApplicationShortcut);
      quit->setShortcut(QKeySequence::Quit);
+     quit->setShortcutContext(Qt::ApplicationShortcut);
+
      config->setShortcut(QKeySequence(Qt::CTRL+Qt::Key_P));
+     config->setShortcutContext(Qt::ApplicationShortcut);
      mte = new QShortcut(this);
+     mte->setContext(Qt::ApplicationShortcut);
      shwList = new QShortcut(this);
+     shwList->setContext(Qt::ApplicationShortcut);
+
+     ply = new QShortcut(this);
+     ply->setContext(Qt::ApplicationShortcut);
+     stp = new QShortcut(this);
+     stp->setContext(Qt::ApplicationShortcut);
+     nxt = new QShortcut(this);
+     nxt->setContext(Qt::ApplicationShortcut);
+     prv = new QShortcut(this);
+     prv->setContext(Qt::ApplicationShortcut);
 
      connect(opVid, SIGNAL(triggered()), this, SLOT(open()));
      connect(quit, SIGNAL(triggered()), this, SLOT(quit()));
@@ -149,6 +171,10 @@ MainWindow::MainWindow(QWidget *parent) :
        connect(previous, SIGNAL(clicked()),this,SLOT(previousMedia()));
        connect(mte,SIGNAL(activated()),this,SLOT(mute()));
        connect(shwList, SIGNAL(activated()),this, SLOT(showPlaylist()));
+       connect(ply, SIGNAL(activated()),this,SLOT(play()));
+       connect(stp, SIGNAL(activated()),this, SLOT(stop()));
+       connect(nxt, SIGNAL(activated()),this,SLOT(nextMedia()));
+       connect(prv,SIGNAL(activated()),this,SLOT(previousMedia()));
 
       connect(mode1,SIGNAL(triggered()),this,SLOT(setSequential()));
       connect(mode2,SIGNAL(triggered()),this,SLOT(setRepeat()));
@@ -156,8 +182,10 @@ MainWindow::MainWindow(QWidget *parent) :
       connect(mode4,SIGNAL(triggered()),this,SLOT(setRandom()));
 
        viewer = new playlistView(this);
+       connect(viewer,SIGNAL(removeIndex(QList<int>)), this, SLOT(removeMedia(QList<int>)));
        trayVisible = false; notifyFlag=false; runbckgd = false;
        readSettings();
+
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -186,14 +214,20 @@ void MainWindow::clear()
 
 void MainWindow::open(){
 
-QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video"), QDir::homePath());
+QStringList fileName = QFileDialog::getOpenFileNames(this, tr("Open Video"), QDir::homePath());
 
   if (!fileName.isEmpty()){
 
-     playlist->addMedia(QUrl::fromLocalFile((fileName)));
 
-      fileName = fileName.section('/', -1);
-     plist.append(fileName);
+      foreach(const QString &str, fileName){
+
+          playlist->addMedia(QUrl::fromLocalFile((str)));
+          QString str2 = str.section('/', -1);
+          plist.append(str2);
+
+      }
+
+
      viewer->setPlaylist(plist);
   }
 
@@ -269,16 +303,35 @@ void MainWindow::previousMedia()
     if(playlist->currentMedia().isNull()){
         setWindowTitle("Cleps Video Player");
     }else{
-    setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
-}}
+        setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
+    }}
+
+void MainWindow::removeMedia(QList<int> list)
+{
+
+    foreach(const int idx, list){
+
+        plist.removeAt(idx);
+        playlist->removeMedia(idx);
+    }
+            viewer->setPlaylist(plist);
+
+}
 
 void MainWindow::showPlaylist()
 {
+    if(viewer->isHidden()){
+
     viewer->show();
     viewer->raise();
     viewer->activateWindow();
-}
+    mdlist->setChecked(true);
+}else{
+        viewer->hide();
+        mdlist->setChecked(false);
 
+    }
+}
 void MainWindow::loadMedia(QString media)
 {
 
@@ -352,22 +405,38 @@ void MainWindow::setPosition(int position){
 void MainWindow::setRandom()
 {
     playlist->setPlaybackMode(QMediaPlaylist::Random);
+    mode1->setChecked(false);
+    mode2->setChecked(false);
+    mode3->setChecked(false);
+    mode4->setChecked(true);
 }
 
 void MainWindow::setRepeat()
 {
     playlist->setPlaybackMode(QMediaPlaylist::Loop);
+    mode1->setChecked(false);
+    mode2->setChecked(true);
+    mode3->setChecked(false);
+    mode4->setChecked(false);
 }
 
 void MainWindow::setRepeatOne()
 {
     playlist->setPlaybackMode(QMediaPlaylist::CurrentItemInLoop);
+    mode1->setChecked(false);
+    mode2->setChecked(false);
+    mode3->setChecked(true);
+    mode4->setChecked(false);
 
 }
 
 void MainWindow::setSequential()
 {
     playlist->setPlaybackMode(QMediaPlaylist::Sequential);
+     mode1->setChecked(true);
+     mode2->setChecked(false);
+     mode3->setChecked(false);
+     mode4->setChecked(false);
 }
 
 void MainWindow::setupTray()
@@ -420,10 +489,10 @@ void MainWindow::readSettings()
 {
      QSettings settings;
 
-     playButton->setShortcut(settings.value("shortcut/play_pause").value<QKeySequence>());
-     stopButton->setShortcut(settings.value("shortcut/stop").value<QKeySequence>());
-     next->setShortcut(settings.value("shortcut/nextmedia").value<QKeySequence>());
-     previous->setShortcut(settings.value("shortcut/previousmedia").value<QKeySequence>());
+     ply->setKey(settings.value("shortcut/play_pause").value<QKeySequence>());
+     stp->setKey(settings.value("shortcut/stop").value<QKeySequence>());
+     nxt->setKey(settings.value("shortcut/nextmedia").value<QKeySequence>());
+     prv->setKey(settings.value("shortcut/previousmedia").value<QKeySequence>());
      mte->setKey((settings.value("shortcut/mute").value<QKeySequence>()));
      shwList->setKey((settings.value("shortcut/show_playlist").value<QKeySequence>()));
 

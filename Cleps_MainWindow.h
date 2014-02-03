@@ -46,6 +46,7 @@ public slots:
     void previousMedia();
     void removeMedia(QList<int> list);
     void showPlaylist();
+    void swap(int old, int newd);
     void loadMedia(QString media);
 
 

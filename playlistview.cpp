@@ -21,12 +21,13 @@
 #include <QMenu>
 #include <QSettings>
 #include <QShortcut>
+#include <QPushButton>
 
 playlistView::playlistView(QWidget *parent) :
     QDialog(parent)
 {
     setWindowTitle(tr("Playlist"));
-    setFixedSize(400,350);
+    setFixedSize(400,450);
     mediaList = new QListView();
     mediaList->setUniformItemSizes(true);
     mediaList->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -34,9 +35,36 @@ playlistView::playlistView(QWidget *parent) :
 
     mediaModel = new QStringListModel(mediaList);
 
+    QPushButton *upI = new QPushButton;
+    upI->setToolTip(tr("Move Up"));
+    upI->setIcon(style()->standardIcon(QStyle::SP_ArrowUp));
+
+
+    QPushButton *downI = new QPushButton;
+    downI->setToolTip(tr("Move Down"));
+    downI->setIcon(style()->standardIcon(QStyle::SP_ArrowDown));
+
+
+    QPushButton *delI = new QPushButton;
+    delI->setToolTip(tr("Delete"));
+    delI->setIcon(style()->standardIcon(QStyle::SP_TrashIcon));
+
+
+    QPushButton *opn = new QPushButton;
+    opn->setToolTip(tr("Open media"));
+    opn->setIcon(style()->standardIcon(QStyle::SP_DirIcon));
+
+
+    QBoxLayout *hlay = new QHBoxLayout;
+    hlay->addStretch(1);
+    hlay->addWidget(opn);
+    hlay->addWidget(delI);
+    hlay->addWidget(upI);
+    hlay->addWidget(downI);
 
     QBoxLayout *layout = new QVBoxLayout();
     layout->addWidget(mediaList);
+    layout->addLayout(hlay);
 
     setLayout(layout);
 
@@ -45,7 +73,11 @@ playlistView::playlistView(QWidget *parent) :
 
     connect(mediaList, SIGNAL(doubleClicked(QModelIndex)),this->parent(),SLOT(playd(QModelIndex)));
     connect(mediaList,SIGNAL(activated(QModelIndex)), this->parent(), SLOT(playd(QModelIndex)));
+    connect(delI, SIGNAL(clicked()), this, SLOT(remove()));
     connect(deleted,SIGNAL(activated()), this, SLOT(remove()));
+    connect(opn, SIGNAL(clicked()),this->parent(),SLOT(open()));
+    connect(upI,SIGNAL(clicked()),this,SLOT(mveUp()));
+    connect(downI,SIGNAL(clicked()),this,SLOT(mveDown()));
 
 }
 
@@ -67,11 +99,43 @@ void playlistView::remove()
 
 }
 
+void playlistView::mveUp(){
+
+    QModelIndexList deleteList = mediaList->selectionModel()->selection().indexes();
+
+    int row, nwrow;
+
+    if(!deleteList.isEmpty()){
+     row = deleteList.first().row();
+    nwrow = row--;
+
+
+  emit swapIndex(row, nwrow);
+
+
+}
+
+}
+
+void playlistView::mveDown()
+{
+
+    QModelIndexList deleteList = mediaList->selectionModel()->selection().indexes();
+
+    int row, nwrow;
+
+    if(!deleteList.isEmpty()){
+     row = deleteList.first().row();
+    nwrow = row++;
+
+    emit swapIndex(row,nwrow);
+}
+}
+
 void playlistView::setPlaylist(QStringList list)
 {
     mediaModel->setStringList(list);
     mediaList->setModel(mediaModel);
-
 
 }
 

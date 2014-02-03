@@ -36,9 +36,12 @@ public:
 
 signals:
     void removeIndex(QList<int>);
+    void swapIndex(int,int);
 
 public slots:
      void remove();
+     void mveUp();
+     void mveDown();
 
 private:
 

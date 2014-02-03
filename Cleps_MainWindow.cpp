@@ -183,6 +183,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
        viewer = new playlistView(this);
        connect(viewer,SIGNAL(removeIndex(QList<int>)), this, SLOT(removeMedia(QList<int>)));
+       connect(viewer,SIGNAL(swapIndex(int,int)),this,SLOT(swap(int, int)));
        trayVisible = false; notifyFlag=false; runbckgd = false;
        readSettings();
 
@@ -332,6 +333,23 @@ void MainWindow::showPlaylist()
 
     }
 }
+
+void MainWindow::swap(int old, int newd)
+{
+
+    if(old >= 0 && old < plist.size()){
+        if(newd>=0 && newd != plist.size()){
+
+            plist.move(old, newd);
+            QMediaContent md= playlist->media(old);
+            playlist->removeMedia(old);
+            playlist->insertMedia(newd, md);
+            viewer->setPlaylist(plist);
+        }
+    }
+
+}
+
 void MainWindow::loadMedia(QString media)
 {
 

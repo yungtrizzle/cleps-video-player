@@ -31,9 +31,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     void closeEvent(QCloseEvent *event);
-
-protected :
     void resizeEvent(QResizeEvent *event);
+
 
 signals:
 

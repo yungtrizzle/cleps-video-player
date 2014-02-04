@@ -204,7 +204,6 @@ MainWindow::MainWindow(QWidget *parent) :
        trayVisible = false; notifyFlag=false; runbckgd = false; hasSubs = false;
        readSettings();
 
-       ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.30,(this->height() + ovlay->sizeHint().height())*0.80, ovlay->sizeHint().width()*3, ovlay->sizeHint().height());
 
 }
 
@@ -225,8 +224,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
 
+if(hasSubs){
     ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.30,(this->height() + ovlay->sizeHint().height())*0.80, ovlay->sizeHint().width()*3, ovlay->sizeHint().height());
-
+}
     event->accept();
 
 }
@@ -285,7 +285,9 @@ void MainWindow::durationChanged(qint64 timed){
 
 void MainWindow::mediaChanged()
 {
+    ovlay->clear();
     subs->clear();
+    hasSubs = false;
     if(playlist->currentMedia().isNull()){
         setWindowTitle("Cleps Video Player");
     }else{
@@ -375,10 +377,9 @@ void MainWindow::showPlaylist()
 
 void MainWindow::showSub()
 {
-    QString txy = subs->subtitle();
+   QString txy = subs->subtitle();
     ovlay->setText(txy);
     ovlay->adjustSize();
-
 }
 
 void MainWindow::swap(int old, int newd)

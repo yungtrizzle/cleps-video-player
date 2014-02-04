@@ -23,6 +23,7 @@
 #include "cleps_vidplayer.h"
 #include "volumeslider.h"
 #include "playlistview.h"
+#include "subtitleprovider.h"
 
 class MainWindow : public QMainWindow
 {
@@ -31,10 +32,13 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     void closeEvent(QCloseEvent *event);
 
+protected :
+    void resizeEvent(QResizeEvent *event);
 
 signals:
 
 public slots:
+    void addSubs();
     void clear();
     void open();
     void quit();
@@ -46,6 +50,7 @@ public slots:
     void previousMedia();
     void removeMedia(QList<int> list);
     void showPlaylist();
+    void showSub();
     void swap(int old, int newd);
     void loadMedia(QString media);
 
@@ -71,7 +76,7 @@ private slots:
 
 
 private:
-    QAction *opVid,*config,*mdlist,*mode1, *mode2, *mode3, *mode4;
+    QAction *opVid,*config,*mdlist,*subtitle,*mode1, *mode2, *mode3, *mode4;
     QMediaPlayer *playerD;
     QMediaPlaylist *playlist;
     QMenuBar *gblMenu;
@@ -82,9 +87,11 @@ private:
     QSlider *seekr;
     volumeSlider *volSlide;
     playlistView *viewer;
+    SubtitleProvider *subs;
     QShortcut *mte, *shwList, *ply, *stp, *nxt,*prv;
     QSystemTrayIcon *cleps;
-    bool notifyFlag, trayVisible, runbckgd;
+    QLabel *ovlay;
+    bool notifyFlag, trayVisible, runbckgd, hasSubs;
 
 };
 

@@ -20,11 +20,12 @@
 #include <QVideoWidget>
 
 
+
 Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
     : QWidget(parent)
 
 {
-    videoWidget = new QVideoWidget;
+    videoWidget = new QVideoWidget(this);
     videoWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
     QBoxLayout *mreLayout = new QHBoxLayout;
@@ -38,6 +39,7 @@ Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
        setLayout(layout);
 
       QShortcut *fll = new QShortcut(QKeySequence(Qt::Key_F11), videoWidget);
+      fll->setContext(Qt::ApplicationShortcut);
 
        connect(fll,SIGNAL(activated()),this,SLOT(fullScreen()));
        connect(videoWidget, SIGNAL(customContextMenuRequested(QPoint)),this, SLOT(context(QPoint)));

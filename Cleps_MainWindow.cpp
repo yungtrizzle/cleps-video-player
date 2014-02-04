@@ -19,16 +19,16 @@
 #include "Cleps_MainWindow.h"
 #include "cleps_vidplayer.h"
 #include "settings_dialog.h"
+#include "subtitleprovider.h"
 #include <QDBusInterface>
 #include <QDBusReply>
 #include <QDBusMetaType>
-
+#include <QVideoWidget>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
-    this->setGeometry(50,50,700,500);
-
+    this->setGeometry(50,50,900,700);
     this->setWindowTitle("Cleps Video Player");
     this->setWindowIcon(QIcon(":/icons/cleps.png"));
 
@@ -43,9 +43,21 @@ MainWindow::MainWindow(QWidget *parent) :
     setCentralWidget(player);
 
 
+    ovlay = new QLabel(centralWidget());
+    ovlay->setPalette(Qt::transparent);
+    ovlay->setAttribute(Qt::WA_TransparentForMouseEvents);
+   QPalette p;
+   p.setBrush(QPalette::Foreground, QBrush(Qt::white));
+   ovlay->setPalette(p);
+    QFont font("" , 14 , QFont::Bold);
+    ovlay->setFont(font);
+    ovlay->setTextFormat(Qt::RichText);
+    ovlay->setAlignment(Qt::AlignCenter);
+
+
     fileMenu = new QMenu(tr("&Media"));
     opVid = new QAction(tr("&Add to Playlist"), this);
-  QAction *quit = new QAction(tr("&Quit"), this);
+    QAction *quit = new QAction(tr("&Quit"), this);
 
     fileMenu->addAction(opVid);
     fileMenu->addSeparator();
@@ -55,6 +67,7 @@ MainWindow::MainWindow(QWidget *parent) :
     config = new QAction(tr("Preferences"), this);
     mdlist = new QAction(tr("View Playlist"), this);
     mdlist->setCheckable(true);
+    subtitle = new QAction(tr("Add Subtitle File"),this);
 
 
     mode1 = new QAction(tr("Sequential"), this);
@@ -68,6 +81,8 @@ MainWindow::MainWindow(QWidget *parent) :
     mode4->setCheckable(true);
 
 
+    settingsMenu->addAction(subtitle);
+    settingsMenu->addSeparator();
     settingsMenu->addAction(mdlist);
     playlistModeMenu = settingsMenu->addMenu(tr("Playlist Mode"));
     settingsMenu->addSeparator();
@@ -156,6 +171,7 @@ MainWindow::MainWindow(QWidget *parent) :
      connect(quit, SIGNAL(triggered()), this, SLOT(quit()));
      connect(config,SIGNAL(triggered()),this,SLOT(viewSettings()));
      connect(mdlist, SIGNAL(triggered()), this,SLOT(showPlaylist()));
+     connect(subtitle,SIGNAL(triggered()),this,SLOT(addSubs()));
 
        connect(playerD, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
        connect(seekr, SIGNAL(sliderMoved(int)),this, SLOT(setPosition(int)));
@@ -182,10 +198,13 @@ MainWindow::MainWindow(QWidget *parent) :
       connect(mode4,SIGNAL(triggered()),this,SLOT(setRandom()));
 
        viewer = new playlistView(this);
+       subs = new SubtitleProvider;
        connect(viewer,SIGNAL(removeIndex(QList<int>)), this, SLOT(removeMedia(QList<int>)));
        connect(viewer,SIGNAL(swapIndex(int,int)),this,SLOT(swap(int, int)));
-       trayVisible = false; notifyFlag=false; runbckgd = false;
+       trayVisible = false; notifyFlag=false; runbckgd = false; hasSubs = false;
        readSettings();
+
+       ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.30,(this->height() + ovlay->sizeHint().height())*0.80, ovlay->sizeHint().width()*3, ovlay->sizeHint().height());
 
 }
 
@@ -200,7 +219,26 @@ void MainWindow::closeEvent(QCloseEvent *event)
        close();
    }
 
+}
 
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+
+    ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.30,(this->height() + ovlay->sizeHint().height())*0.80, ovlay->sizeHint().width()*3, ovlay->sizeHint().height());
+
+    event->accept();
+
+}
+
+
+void MainWindow::addSubs()
+{
+
+    QString subFile = QFileDialog::getOpenFileName(this, tr("Open Subtitle"),QDir::homePath());
+    subs->setFilename(QUrl::fromLocalFile(subFile));
+    connect(subs,SIGNAL(subtitleChanged()),this,SLOT(showSub()));
+    hasSubs = true;
 
 }
 
@@ -247,6 +285,7 @@ void MainWindow::durationChanged(qint64 timed){
 
 void MainWindow::mediaChanged()
 {
+    subs->clear();
     if(playlist->currentMedia().isNull()){
         setWindowTitle("Cleps Video Player");
     }else{
@@ -332,6 +371,14 @@ void MainWindow::showPlaylist()
         mdlist->setChecked(false);
 
     }
+}
+
+void MainWindow::showSub()
+{
+    QString txy = subs->subtitle();
+    ovlay->setText(txy);
+    ovlay->adjustSize();
+
 }
 
 void MainWindow::swap(int old, int newd)
@@ -560,6 +607,9 @@ void MainWindow::viewSettings()
 void MainWindow::positionChanged(qint64 position){
 
     seekr->setValue(position);
+    if(hasSubs){
+    subs->setSubtitleTime(position);
+}
 }
 
 void MainWindow::seekNewPosition(int newPos)
@@ -573,7 +623,7 @@ void MainWindow::seekNewPosition(int newPos)
                               localMousePos.y() < seekr->size().height());
         if (clickOnSlider)
         {
-            // Attention! The following works only for Horizontal, Left-to-right sliders
+
             float posRatio = localMousePos.x() / (float )seekr->size().width();
             int sliderRange = seekr->maximum() - seekr->minimum();
             int sliderPosUnderMouse = seekr->minimum() + sliderRange * posRatio;
@@ -603,6 +653,7 @@ void MainWindow::quit(){
 *
 * Copyright 2010, David Sansome <me@davidsansome.com>
 */
+
 QDBusArgument& operator<<(QDBusArgument& arg, const QImage& image) {
   if(image.isNull()) {
     arg.beginStructure();

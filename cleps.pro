@@ -22,7 +22,8 @@ SOURCES += main.cpp\
     settings_dialog.cpp \
     shortcuteditor.cpp \
     shortcuts.cpp \
-    behaviour_settings.cpp
+    behaviour_settings.cpp \
+    subtitleprovider.cpp
 
 HEADERS  += cleps_vidplayer.h \
     Cleps_MainWindow.h \
@@ -31,7 +32,8 @@ HEADERS  += cleps_vidplayer.h \
     settings_dialog.h \
     shortcuteditor.h \
     shortcuts.h \
-    behaviour_settings.h
+    behaviour_settings.h \
+    subtitleprovider.h
 
 TRANSLATIONS =
 

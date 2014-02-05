@@ -41,5 +41,5 @@ RESOURCES += \
     icons.qrc
 
 
-
+QMAKE_CXXFLAGS += -std=c++11
 

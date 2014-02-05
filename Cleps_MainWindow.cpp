@@ -43,6 +43,8 @@ MainWindow::MainWindow(QWidget *parent) :
     setCentralWidget(player);
 
 
+    setAcceptDrops(true);
+
     ovlay = new QLabel(centralWidget());
     ovlay->setPalette(Qt::transparent);
     ovlay->setAttribute(Qt::WA_TransparentForMouseEvents);
@@ -234,6 +236,33 @@ if(hasSubs){
 
 }
 
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+
+    if(event->mimeData()->hasFormat("text/uri-list")){
+        event->acceptProposedAction();
+
+    }
+
+
+}
+
+void MainWindow::dropEvent(QDropEvent *event)
+{
+
+    QList<QUrl> urls = event->mimeData()->urls();
+        if (urls.isEmpty())
+            return;
+
+        for(const QUrl &file:urls){
+
+            if(!file.isEmpty()){
+                loadMedia(file.toLocalFile());
+            }
+        }
+
+}
+
 
 void MainWindow::addSubs()
 {
@@ -262,7 +291,7 @@ QStringList fileName = QFileDialog::getOpenFileNames(this, tr("Open Video"), QDi
   if (!fileName.isEmpty()){
 
 
-      foreach(const QString &str, fileName){
+      for(const QString &str: fileName){
 
           playlist->addMedia(QUrl::fromLocalFile((str)));
           QString str2 = str.section('/', -1);
@@ -321,15 +350,17 @@ void MainWindow::mediaStateChanged(QMediaPlayer::State state)
 
 void MainWindow::mute(){
 
-    switch(playerD->isMuted()){
-    case true : playerD->setMuted(false);
-                 volSlide->setDisabled(false);
-                break;
-    case false : playerD->setMuted(true);
-                 volSlide->setDisabled(true);
-                 break;
+    if(playerD->isMuted()){
+    playerD->setMuted(false);
+    volSlide->setDisabled(false);
+                }
+
+    else{
+          playerD->setMuted(true);
+          volSlide->setDisabled(true);
     }
-}
+    }
+
 
 void MainWindow::nextMedia()
 {
@@ -355,7 +386,7 @@ void MainWindow::previousMedia()
 void MainWindow::removeMedia(QList<int> list)
 {
 
-    foreach(const int idx, list){
+    for(const int idx: list){
 
         plist.removeAt(idx);
         playlist->removeMedia(idx);
@@ -590,11 +621,12 @@ void MainWindow::toggleHideWindow(QSystemTrayIcon::ActivationReason reason)
 
     if(reason == QSystemTrayIcon::Trigger){
 
-        switch(this->isVisible()){
-        case true: this->setHidden(true);
-                    break;
-        case false: this->show();
-                    break;
+        if(this->isVisible()){
+        this->setHidden(true);
+
+         }else{
+            this->show();
+
         }
 
     }

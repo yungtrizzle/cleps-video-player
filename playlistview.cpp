@@ -22,12 +22,14 @@
 #include <QSettings>
 #include <QShortcut>
 #include <QPushButton>
+#include <QMimeData>
 
 playlistView::playlistView(QWidget *parent) :
     QDialog(parent)
 {
     setWindowTitle(tr("Playlist"));
     setFixedSize(400,450);
+    setAcceptDrops(true);
     mediaList = new QListView();
     mediaList->setUniformItemSizes(true);
     mediaList->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -78,6 +80,7 @@ playlistView::playlistView(QWidget *parent) :
     connect(opn, SIGNAL(clicked()),this->parent(),SLOT(open()));
     connect(upI,SIGNAL(clicked()),this,SLOT(mveUp()));
     connect(downI,SIGNAL(clicked()),this,SLOT(mveDown()));
+    connect(this,SIGNAL(addMedia(QString)),this->parentWidget(),SLOT(loadMedia(QString)));
 
 }
 
@@ -89,7 +92,7 @@ void playlistView::remove()
 
     if(!deleteList.isEmpty()){
 
-    foreach(const QModelIndex &idx, deleteList){
+    for(const QModelIndex &idx: deleteList){
 
         dlIndex.append(idx.row());
     }
@@ -166,5 +169,28 @@ void playlistView::closeEvent(QCloseEvent *event)
 
 }
 
+void playlistView::dragEnterEvent(QDragEnterEvent *event)
+{
+
+    if(event->mimeData()->hasFormat("text/uri-list")){
+        event->acceptProposedAction();
+
+    }
+}
+
+void playlistView::dropEvent(QDropEvent *event)
+{
+
+    QList<QUrl> urls = event->mimeData()->urls();
+        if (urls.isEmpty())
+            return;
+
+        for(const QUrl &file:urls){
+
+            if(!file.isEmpty()){
+             emit addMedia(file.toLocalFile());
+        }
+}
+}
 
 

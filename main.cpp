@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
       MainWindow w;
 
-     foreach(const QString &str, args){
+     for(const QString &str: args){
          w.loadMedia(str);
      }
 

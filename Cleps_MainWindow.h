@@ -32,7 +32,8 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     void closeEvent(QCloseEvent *event);
     void resizeEvent(QResizeEvent *event);
-
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dropEvent(QDropEvent *event);
 
 signals:
 

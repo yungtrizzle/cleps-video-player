@@ -33,10 +33,13 @@ public:
     void setPlaylist(QStringList list);
     void contextMenuEvent(QContextMenuEvent *event);
     void closeEvent(QCloseEvent *event);
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dropEvent(QDropEvent *event);
 
 signals:
     void removeIndex(QList<int>);
     void swapIndex(int,int);
+    void addMedia(QString media);
 
 public slots:
      void remove();

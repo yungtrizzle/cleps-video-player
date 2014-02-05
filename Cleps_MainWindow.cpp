@@ -204,6 +204,9 @@ MainWindow::MainWindow(QWidget *parent) :
        trayVisible = false; notifyFlag=false; runbckgd = false; hasSubs = false;
        readSettings();
 
+       ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.30,(this->height() + ovlay->sizeHint().height())*0.80, ovlay->sizeHint().width()*3, ovlay->sizeHint().height());
+       ovlay->hide();
+
 
 }
 
@@ -239,6 +242,7 @@ void MainWindow::addSubs()
     subs->setFilename(QUrl::fromLocalFile(subFile));
     connect(subs,SIGNAL(subtitleChanged()),this,SLOT(showSub()));
     hasSubs = true;
+    ovlay->show();
 
 }
 
@@ -285,7 +289,7 @@ void MainWindow::durationChanged(qint64 timed){
 
 void MainWindow::mediaChanged()
 {
-    ovlay->clear();
+    ovlay->hide();
     subs->clear();
     hasSubs = false;
     if(playlist->currentMedia().isNull()){

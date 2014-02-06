@@ -206,7 +206,7 @@ MainWindow::MainWindow(QWidget *parent) :
        trayVisible = false; notifyFlag=false; runbckgd = false; hasSubs = false;
        readSettings();
 
-       ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.60,(this->height() + ovlay->sizeHint().height())*0.8, this->width(), ovlay->sizeHint().height());
+       ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.30,(this->height() + ovlay->sizeHint().height())*0.80, ovlay->sizeHint().width()*3, ovlay->sizeHint().height());
        ovlay->hide();
 }
 
@@ -229,7 +229,8 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 {
 
 if(hasSubs){
-    ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.60,(this->height() + ovlay->sizeHint().height())*0.8, this->width(), ovlay->sizeHint().height());
+
+    ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.30,(this->height() + ovlay->sizeHint().height())*0.80, ovlay->sizeHint().width()*3, ovlay->sizeHint().height());
 
 }
     event->accept();

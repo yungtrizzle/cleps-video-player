@@ -25,6 +25,7 @@
 #include <QDBusMetaType>
 #include <QVideoWidget>
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
@@ -42,16 +43,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setCentralWidget(player);
 
-
     setAcceptDrops(true);
 
     ovlay = new QLabel(centralWidget());
     ovlay->setPalette(Qt::transparent);
     ovlay->setAttribute(Qt::WA_TransparentForMouseEvents);
-   QPalette p;
-   p.setBrush(QPalette::Foreground, QBrush(Qt::white));
-   ovlay->setPalette(p);
-    QFont font("" , 14 , QFont::Bold);
+    QPalette p;
+    p.setBrush(QPalette::Foreground, QBrush(Qt::white));
+    ovlay->setPalette(p);
+    QFont font("" , 14);
     ovlay->setFont(font);
     ovlay->setTextFormat(Qt::RichText);
     ovlay->setAlignment(Qt::AlignCenter);
@@ -206,11 +206,10 @@ MainWindow::MainWindow(QWidget *parent) :
        trayVisible = false; notifyFlag=false; runbckgd = false; hasSubs = false;
        readSettings();
 
-       ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.30,(this->height() + ovlay->sizeHint().height())*0.80, ovlay->sizeHint().width()*3, ovlay->sizeHint().height());
+       ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.60,(this->height() + ovlay->sizeHint().height())*0.8, this->width(), ovlay->sizeHint().height());
        ovlay->hide();
-
-
 }
+
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
@@ -230,7 +229,8 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 {
 
 if(hasSubs){
-    ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.30,(this->height() + ovlay->sizeHint().height())*0.80, ovlay->sizeHint().width()*3, ovlay->sizeHint().height());
+    ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.60,(this->height() + ovlay->sizeHint().height())*0.8, this->width(), ovlay->sizeHint().height());
+
 }
     event->accept();
 
@@ -268,6 +268,7 @@ void MainWindow::addSubs()
 {
 
     QString subFile = QFileDialog::getOpenFileName(this, tr("Open Subtitle"),QDir::homePath());
+
     subs->setFilename(QUrl::fromLocalFile(subFile));
     connect(subs,SIGNAL(subtitleChanged()),this,SLOT(showSub()));
     hasSubs = true;

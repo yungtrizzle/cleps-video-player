@@ -25,6 +25,7 @@
 #include "playlistview.h"
 #include "subtitleprovider.h"
 
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

@@ -38,7 +38,7 @@ public slots:
    void context(QPoint pos);
 
 private slots:
-
+   void exitFullScreen();
    void fullScreen();
    void mouseDoubleClickEvent(QMouseEvent *event);
    void contextMenuEvent(QContextMenuEvent *event);

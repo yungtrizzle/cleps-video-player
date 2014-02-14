@@ -41,7 +41,12 @@ Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
       QShortcut *fll = new QShortcut(QKeySequence(Qt::Key_F11), videoWidget);
       fll->setContext(Qt::ApplicationShortcut);
 
+      QShortcut *fllve = new QShortcut(QKeySequence(Qt::Key_Escape), videoWidget);
+      fllve->setContext(Qt::ApplicationShortcut);
+
+
        connect(fll,SIGNAL(activated()),this,SLOT(fullScreen()));
+       connect(fllve,SIGNAL(activated()),this,SLOT(exitFullScreen()));
        connect(videoWidget, SIGNAL(customContextMenuRequested(QPoint)),this, SLOT(context(QPoint)));
 
 }
@@ -59,7 +64,7 @@ void Cleps_VidPlayer::fullScreen(){
 
 void Cleps_VidPlayer::mouseDoubleClickEvent(QMouseEvent *event)
 {
-   videoWidget->setFullScreen(!isFullScreen());
+    fullScreen();
    event->accept();
 }
 
@@ -103,4 +108,9 @@ void Cleps_VidPlayer::context(QPoint pos)
 
     menu.exec(pos);
 
+}
+
+void Cleps_VidPlayer::exitFullScreen()
+{
+    videoWidget->setFullScreen(false);
 }

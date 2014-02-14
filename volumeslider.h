@@ -30,6 +30,7 @@ class volumeSlider : public QToolButton
 public:
     explicit volumeSlider(QWidget *parent = 0);
     void setValue(int val);
+    void setRange(int start, int end);
 
 signals:
    void volumeChanged(int volume);

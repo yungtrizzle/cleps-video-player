@@ -52,3 +52,8 @@ void volumeSlider::setValue(int val){
 
     volSlider->setValue(val);
 }
+
+void volumeSlider::setRange(int start, int end)
+{
+    volSlider->setRange(start,end);
+}

@@ -40,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
     player = new Cleps_VidPlayer(this);
 
     playerD->setVideoOutput(player->videoWidget);
+    playerD->setVolume(100);
 
     setCentralWidget(player);
 
@@ -129,6 +130,7 @@ MainWindow::MainWindow(QWidget *parent) :
  seekr->setPageStep(1);
 
  volSlide = new volumeSlider;
+ volSlide->setRange(0,100);
  volSlide->setValue(100);
  volSlide->setToolTip(tr("Volume"));
  volSlide->adjustSize();
@@ -464,8 +466,6 @@ void MainWindow::aboutIt()
 
 
 void MainWindow::play(){
-
-playerD->setVolume(100);
 
     switch(playerD->state()) {
         case QMediaPlayer::PlayingState:

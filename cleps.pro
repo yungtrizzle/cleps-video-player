@@ -43,3 +43,6 @@ RESOURCES += \
 
 QMAKE_CXXFLAGS += -std=c++11
 
+OTHER_FILES += \
+    cleps-video-player.desktop
+

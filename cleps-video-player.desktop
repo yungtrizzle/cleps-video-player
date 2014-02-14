@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Cleps Video Player
+Comment=A Simple Multimedia Player
+Exec=cleps
+Icon=cleps
+Categories=AudioVideo;
+Terminal=false

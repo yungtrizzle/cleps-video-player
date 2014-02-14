@@ -142,7 +142,7 @@ MainWindow::MainWindow(QWidget *parent) :
      tBard->addWidget(seekr);
      tBard->addWidget(volSlide);
 
-     tBard->setFloatable(false);
+    tBard->setFloatable(false);
      tBard->setMovable(false);
      tBard->adjustSize();
 
@@ -270,11 +270,13 @@ void MainWindow::addSubs()
 
     QString subFile = QFileDialog::getOpenFileName(this, tr("Open Subtitle"),QDir::homePath());
 
+    if(!subFile.isEmpty()){
+
     subs->setFilename(QUrl::fromLocalFile(subFile));
     connect(subs,SIGNAL(subtitleChanged()),this,SLOT(showSub()));
     hasSubs = true;
-    ovlay->show();
 
+}
 }
 
 void MainWindow::clear()
@@ -326,7 +328,7 @@ void MainWindow::mediaChanged()
     if(playlist->currentMedia().isNull()){
         setWindowTitle("Cleps Video Player");
     }else{
-    setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
+    setWindowTitle(plist.value(playlist->currentIndex())+" - Cleps Video Player");
 
 
      if(notifyFlag){
@@ -372,7 +374,7 @@ void MainWindow::nextMedia()
         setWindowTitle("Cleps Video Player");
     }else{
 
-    setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
+    setWindowTitle(plist.value(playlist->currentIndex())+" - Cleps Video Player");
 }}
 
 void MainWindow::previousMedia()
@@ -382,7 +384,7 @@ void MainWindow::previousMedia()
     if(playlist->currentMedia().isNull()){
         setWindowTitle("Cleps Video Player");
     }else{
-        setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
+        setWindowTitle(plist.value(playlist->currentIndex())+" - Cleps Video Player");
     }}
 
 void MainWindow::removeMedia(QList<int> list)
@@ -399,7 +401,7 @@ void MainWindow::removeMedia(QList<int> list)
 
 void MainWindow::showPlaylist()
 {
-    if(viewer->isHidden()){
+    if(!viewer->isVisible()){
 
     viewer->show();
     viewer->raise();
@@ -414,6 +416,9 @@ void MainWindow::showPlaylist()
 
 void MainWindow::showSub()
 {
+    if(ovlay->isHidden()){
+
+    ovlay->show();}
    QString txy = subs->subtitle();
     ovlay->setText(txy);
     ovlay->adjustSize();
@@ -450,7 +455,7 @@ void MainWindow::loadMedia(QString media)
 
 void MainWindow::aboutIt()
 {
-    QString title = "About Cleps";
+    QString title = tr("About Cleps");
         QString text = "Cleps Video Player is a simply video player, no more, no less. \nyungtrizzle (C)2014";
 
         QMessageBox::about(this, title, text);
@@ -474,7 +479,7 @@ playerD->setVolume(100);
     if(playlist->currentMedia().isNull()){
         setWindowTitle("Cleps Video Player");
     }else{
-    setWindowTitle(plist.value(playlist->currentIndex())+tr(" - Cleps Video Player"));
+    setWindowTitle(plist.value(playlist->currentIndex())+" - Cleps Video Player");
     }
 
 }
@@ -677,7 +682,7 @@ void MainWindow::seekNewPosition(int newPos)
 
 void MainWindow::quit(){
 
-    this->close();
+    qApp->exit(0);
 
 }
 

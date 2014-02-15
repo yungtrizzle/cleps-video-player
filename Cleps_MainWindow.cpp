@@ -60,9 +60,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     fileMenu = new QMenu(tr("&Media"));
     opVid = new QAction(tr("&Add to Playlist"), this);
+    saveList = new QAction(tr("Save Playlist"),this);
+    loadList = new QAction(tr("Open Playlist"), this);
     QAction *quit = new QAction(tr("&Quit"), this);
 
     fileMenu->addAction(opVid);
+    fileMenu->addAction(loadList);
+    fileMenu->addAction(saveList);
     fileMenu->addSeparator();
     fileMenu->addAction(quit);
 
@@ -176,6 +180,8 @@ MainWindow::MainWindow(QWidget *parent) :
      connect(config,SIGNAL(triggered()),this,SLOT(viewSettings()));
      connect(mdlist, SIGNAL(triggered()), this,SLOT(showPlaylist()));
      connect(subtitle,SIGNAL(triggered()),this,SLOT(addSubs()));
+     connect(saveList,SIGNAL(triggered()),this,SLOT(savePlayList()));
+     connect(loadList,SIGNAL(triggered()),this,SLOT(loadPlayList()));
 
        connect(playerD, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
        connect(seekr, SIGNAL(sliderMoved(int)),this, SLOT(setPosition(int)));
@@ -302,14 +308,12 @@ QStringList fileName = QFileDialog::getOpenFileNames(this, tr("Open Video"), QDi
           playlist->addMedia(QUrl::fromLocalFile((str)));
           QString str2 = str.section('/', -1);
           plist.append(str2);
-
+        }
       }
 
 
      viewer->setPlaylist(plist);
   }
-
-}
 
 
 void MainWindow::changeVolume(int volume){
@@ -401,6 +405,15 @@ void MainWindow::removeMedia(QList<int> list)
 
 }
 
+void MainWindow::savePlayList()
+{
+
+  QString listName = QFileDialog::getSaveFileName(this,tr("Save Playlist"),QDir::homePath(),tr("Playlist Files(*.m3u)"));
+   playlist->save(QUrl::fromUserInput(listName),"m3u");
+  qDebug() << playlist->error();
+
+}
+
 void MainWindow::showPlaylist()
 {
     if(!viewer->isVisible()){
@@ -455,6 +468,42 @@ void MainWindow::loadMedia(QString media)
     }
 }
 
+void MainWindow::loadPlayList(){
+
+    QString str = QFileDialog::getOpenFileName(this,tr("Open Playlist"), QDir::homePath(), tr("Playlist Files (*.m3u)"));
+
+    if(!str.isEmpty() && str.contains("m3u",Qt::CaseInsensitive)){
+
+/*
+    playlist->load(QUrl::fromUserInput(str),"m3u");
+
+                 for(int i =0; i<=playlist->mediaCount();i++){
+
+                     plist.append(playlist->media(i).canonicalUrl().fileName());
+                 }
+*/
+
+
+        QFile f(str);
+        if(!f.open(QIODevice::ReadOnly|QIODevice::Text)){
+
+            qDebug() << "Unable to open file " << f.fileName();
+           return;
+        }
+            QTextStream in(&f);
+
+            while(!in.atEnd()){
+                QString line = in.readLine();
+               QUrl md(line);
+               loadMedia(md.toLocalFile());
+
+            }
+            f.close();
+        }
+
+}
+
+
 void MainWindow::aboutIt()
 {
     QString title = tr("About Cleps");
@@ -491,6 +540,8 @@ void MainWindow::playd(QModelIndex index)
     playerD->setPosition(0);
     playerD->setVideoOutput(player->videoWidget);
     play();
+
+    qDebug()<<playerD->mediaStatus() << "/n" << playerD->error();
 }
 
 

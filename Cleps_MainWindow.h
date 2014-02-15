@@ -50,10 +50,12 @@ public slots:
     void nextMedia();
     void previousMedia();
     void removeMedia(QList<int> list);
+    void savePlayList();
     void showPlaylist();
     void showSub();
     void swap(int old, int newd);
     void loadMedia(QString media);
+    void loadPlayList();
 
 
 private slots:
@@ -77,7 +79,7 @@ private slots:
 
 
 private:
-    QAction *opVid,*config,*mdlist,*subtitle,*mode1, *mode2, *mode3, *mode4;
+    QAction *opVid,*config,*mdlist,*subtitle,*mode1, *mode2, *mode3,*mode4, *saveList, *loadList;
     QMediaPlayer *playerD;
     QMediaPlaylist *playlist;
     QMenuBar *gblMenu;

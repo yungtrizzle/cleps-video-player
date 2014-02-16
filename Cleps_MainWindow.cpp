@@ -41,6 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     playerD->setVideoOutput(player->videoWidget);
     playerD->setVolume(100);
+     playlist->setPlaybackMode(QMediaPlaylist::Sequential);
 
     setCentralWidget(player);
 
@@ -212,6 +213,7 @@ MainWindow::MainWindow(QWidget *parent) :
        connect(viewer,SIGNAL(removeIndex(QList<int>)), this, SLOT(removeMedia(QList<int>)));
        connect(viewer,SIGNAL(swapIndex(int,int)),this,SLOT(swap(int, int)));
        trayVisible = false; notifyFlag=false; runbckgd = false; hasSubs = false;
+       quitPlistEnd = false;
        readSettings();
 
        ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.30,(this->height() + ovlay->sizeHint().height())*0.80, ovlay->sizeHint().width()*3, ovlay->sizeHint().height());
@@ -336,7 +338,6 @@ void MainWindow::mediaChanged()
     }else{
     setWindowTitle(plist.value(playlist->currentIndex())+" - Cleps Video Player");
 
-
      if(notifyFlag){
           showNativeNotify();
 }
@@ -348,8 +349,12 @@ void MainWindow::mediaStateChanged(QMediaPlayer::State state)
     switch(state) {
     case QMediaPlayer::PlayingState:
         playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
-
         break;
+    case QMediaPlayer::StoppedState:
+        if(quitPlistEnd && playlist->playbackMode()== QMediaPlaylist::Sequential){
+            quit();
+        }
+
     default:
         playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
 
@@ -474,16 +479,6 @@ void MainWindow::loadPlayList(){
 
     if(!str.isEmpty() && str.contains("m3u",Qt::CaseInsensitive)){
 
-/*
-    playlist->load(QUrl::fromUserInput(str),"m3u");
-
-                 for(int i =0; i<=playlist->mediaCount();i++){
-
-                     plist.append(playlist->media(i).canonicalUrl().fileName());
-                 }
-*/
-
-
         QFile f(str);
         if(!f.open(QIODevice::ReadOnly|QIODevice::Text)){
 
@@ -541,7 +536,7 @@ void MainWindow::playd(QModelIndex index)
     playerD->setVideoOutput(player->videoWidget);
     play();
 
-    qDebug()<<playerD->mediaStatus() << "/n" << playerD->error();
+    //qDebug()<<playerD->mediaStatus() << "\n" << playerD->error();
 }
 
 
@@ -670,6 +665,10 @@ void MainWindow::readSettings()
          runbckgd = true;
      }else{
              runbckgd = false;
+         }
+
+         if(settings.value("system/playlist_quit").toInt() != 0){
+             quitPlistEnd = true;
          }
 
 }

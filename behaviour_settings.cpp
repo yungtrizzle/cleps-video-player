@@ -27,6 +27,7 @@ behaviour_settings::behaviour_settings(QWidget *parent) :
   trCon = new QCheckBox(tr("Tray Icon           *May Require Restart"));
   notifi = new QCheckBox(tr("Allow Notifications"));
   runBhd = new QCheckBox(tr("Keep Running in the Background"));
+  quitPlistEnd = new QCheckBox(tr("Quit at the end of playlist"));
   QPushButton * apli = new QPushButton(tr("Apply"));
 
  QBoxLayout *hlay = new QHBoxLayout;
@@ -41,6 +42,7 @@ behaviour_settings::behaviour_settings(QWidget *parent) :
  vlay->addWidget(trCon);
  vlay->addWidget(runBhd);
  vlay->addWidget(notifi);
+ vlay->addWidget(quitPlistEnd);
  vlay->addLayout(hlay);
  vlay->insertStretch(12);
 
@@ -50,6 +52,7 @@ behaviour_settings::behaviour_settings(QWidget *parent) :
  connect(notifi,SIGNAL(stateChanged(int)),this,SLOT(ntfyType(int)));
  connect(trCon, SIGNAL(stateChanged(int)),this,SLOT(tray(int)));
  connect(runBhd, SIGNAL(stateChanged(int)),this,SLOT(bckgd(int)));
+ connect(quitPlistEnd,SIGNAL(stateChanged(int)),this,SLOT(quitPlaylistEnd(int)));
  connect(apli,SIGNAL(clicked()),this,SLOT(writeAll()));
 
  readSettings();
@@ -64,6 +67,16 @@ void behaviour_settings::bckgd(int stea)
 
 void behaviour_settings::ntfyType(int state){
     flags->insert("Notify", state);
+}
+
+void behaviour_settings::quitPlaylistEnd(int quitt)
+{
+
+    if(quitt == 0){
+        quitPlistEnd->setCheckState(Qt::Unchecked);
+    }
+
+    flags->insert("playlist_quit", quitt);
 }
 
 void behaviour_settings::tray(int state){
@@ -85,6 +98,7 @@ void behaviour_settings::writeAll(){
     settings.setValue("system/notify", flags->value("Notify",0));
     settings.setValue("system/tray", flags->value("Tray",0));
     settings.setValue("system/run_background", flags->value("Run_Background",0));
+    settings.setValue("system/playlist_quit", flags->value("playlist_quit",0));
 
     this->parentWidget()->parentWidget()->close();
 
@@ -97,6 +111,7 @@ void behaviour_settings::readSettings(){
     flags->insert("Notify", settings.value("system/notify"));
     flags->insert("Tray", settings.value("system/tray"));
     flags->insert("Run_Background", settings.value("system/run_background"));
+    flags->insert("playlist_quit",settings.value("system/playlist_quit"));
 
     if(flags->value("Notify").toInt() != 0){
 
@@ -111,6 +126,11 @@ void behaviour_settings::readSettings(){
 
         runBhd->setCheckState(Qt::Checked);
 
+    }
+
+
+    if(settings.value("system/playlist_quit").toInt() != 0){
+        quitPlistEnd->setCheckState(Qt::Checked);
     }
 
 

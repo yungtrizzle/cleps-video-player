@@ -128,8 +128,8 @@ void shortcuts::resetData()
 
 
          QString key = model->item(row,0)->text().toLower();
-         key.simplified();
-         key.replace(" ", "");
+         key = key.simplified();
+        key = key.replace(" ", "");
           QString value = model->item(row,1)->text().toLower();
 
          if(key.contains("show")){

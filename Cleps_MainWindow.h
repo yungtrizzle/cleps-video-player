@@ -94,7 +94,7 @@ private:
     QShortcut *mte, *shwList, *ply, *stp, *nxt,*prv;
     QSystemTrayIcon *cleps;
     QLabel *ovlay;
-    bool notifyFlag, trayVisible, runbckgd, hasSubs;
+    bool notifyFlag, trayVisible, runbckgd, hasSubs, quitPlistEnd;
 
 };
 

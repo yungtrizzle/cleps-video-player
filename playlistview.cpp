@@ -74,7 +74,6 @@ playlistView::playlistView(QWidget *parent) :
    deleted->setKey(QKeySequence(Qt::Key_Delete));
 
     connect(mediaList, SIGNAL(doubleClicked(QModelIndex)),this->parent(),SLOT(playd(QModelIndex)));
-    connect(mediaList,SIGNAL(activated(QModelIndex)), this->parent(), SLOT(playd(QModelIndex)));
     connect(delI, SIGNAL(clicked()), this, SLOT(remove()));
     connect(deleted,SIGNAL(activated()), this, SLOT(remove()));
     connect(opn, SIGNAL(clicked()),this->parent(),SLOT(open()));

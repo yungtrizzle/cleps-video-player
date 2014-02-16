@@ -34,6 +34,7 @@ signals:
 public slots:
     void bckgd(int stea);
     void ntfyType(int state);
+    void quitPlaylistEnd(int quitt);
     void tray(int state);
     void writeAll();
 private slots:
@@ -41,7 +42,7 @@ private slots:
 
 private:
 
-    QCheckBox *trCon, *notifi, *runBhd;
+    QCheckBox *trCon, *notifi, *runBhd, *quitPlistEnd;
     QMap<QString,QVariant> *flags;
 };
 

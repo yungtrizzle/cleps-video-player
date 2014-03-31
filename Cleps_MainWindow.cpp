@@ -404,6 +404,7 @@ void MainWindow::openRecentFiles()
         if (action)
             loadMedia(action->data().toString());
 
+        play();
 }
 
 void MainWindow::mute(){

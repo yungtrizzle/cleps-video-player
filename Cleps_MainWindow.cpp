@@ -329,7 +329,7 @@ void MainWindow::clearRecent()
 
 void MainWindow::open(){
 
-QStringList fileName = QFileDialog::getOpenFileNames(this, tr("Open Video"), QDir::homePath());
+QStringList fileName = QFileDialog::getOpenFileNames(this, tr("Open Media"), QDir::homePath());
 
   if (!fileName.isEmpty()){
 

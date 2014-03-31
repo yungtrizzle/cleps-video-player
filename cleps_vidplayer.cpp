@@ -74,6 +74,8 @@ void Cleps_VidPlayer::contextMenuEvent(QContextMenuEvent *event)
     menu.addAction(tr("View Playlist"), this->parent(), SLOT(showPlaylist()));
     menu.addAction(tr("Add Media"), this->parent(), SLOT(open()));
     menu.addSeparator();
+    menu.addAction(tr("Toggle Fullscreen"),this, SLOT(fullScreen()));
+    menu.addSeparator();
     menu.addAction(tr("Play/Pause"),this->parent(), SLOT(play()));
     menu.addAction(tr("Previous"),this->parent(), SLOT(previousMedia()));
     menu.addAction(tr("Next"),this->parent(), SLOT(nextMedia()));
@@ -98,6 +100,8 @@ void Cleps_VidPlayer::context(QPoint pos)
     menu.addAction(tr("View Playlist"), this->parent(), SLOT(showPlaylist()));
     menu.addAction(tr("Add Media"), this->parent(), SLOT(open()));
     menu.addSeparator();
+    menu.addAction(tr("Toggle Fullscreen"),this, SLOT(fullScreen()));
+    menu.addSeparator();
     menu.addAction(tr("Play/Pause"),this->parent(), SLOT(play()));
     menu.addAction(tr("Previous"),this->parent(), SLOT(previousMedia()));
     menu.addAction(tr("Next"),this->parent(), SLOT(nextMedia()));
@@ -112,5 +116,7 @@ void Cleps_VidPlayer::context(QPoint pos)
 
 void Cleps_VidPlayer::exitFullScreen()
 {
+    if(videoWidget->isFullScreen()){
     videoWidget->setFullScreen(false);
+}
 }

@@ -41,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     playerD->setVideoOutput(player->videoWidget);
     playerD->setVolume(100);
-     playlist->setPlaybackMode(QMediaPlaylist::Sequential);
+    playlist->setPlaybackMode(QMediaPlaylist::Sequential);
 
     setCentralWidget(player);
 
@@ -53,7 +53,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QPalette p;
     p.setBrush(QPalette::Foreground, QBrush(Qt::white));
     ovlay->setPalette(p);
-    QFont font("" , 14);
+    QFont font("" , 18);
     ovlay->setFont(font);
     ovlay->setTextFormat(Qt::RichText);
     ovlay->setAlignment(Qt::AlignCenter);
@@ -69,7 +69,24 @@ MainWindow::MainWindow(QWidget *parent) :
     fileMenu->addAction(loadList);
     fileMenu->addAction(saveList);
     fileMenu->addSeparator();
+    recent = fileMenu->addMenu(tr("Recent Files"));
+    fileMenu->addSeparator();
     fileMenu->addAction(quit);
+
+
+    for(int i=0; i<5; i++){
+
+        recentF[i] = new QAction(this);
+        recentF[i]->setVisible(false);
+        connect(recentF[i], SIGNAL(triggered()),this, SLOT(openRecentFiles()));
+
+        recent->addAction(recentF[i]);
+    }
+
+
+    cleaR = new QAction(tr("Clear Menu"), this);
+    recent->addSeparator();
+    recent->addAction(cleaR);
 
     settingsMenu = new QMenu(tr("Tools"));
     config = new QAction(tr("Preferences"), this);
@@ -183,6 +200,7 @@ MainWindow::MainWindow(QWidget *parent) :
      connect(subtitle,SIGNAL(triggered()),this,SLOT(addSubs()));
      connect(saveList,SIGNAL(triggered()),this,SLOT(savePlayList()));
      connect(loadList,SIGNAL(triggered()),this,SLOT(loadPlayList()));
+     connect(cleaR, SIGNAL(triggered()), this, SLOT(clearRecent()));
 
        connect(playerD, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
        connect(seekr, SIGNAL(sliderMoved(int)),this, SLOT(setPosition(int)));
@@ -215,6 +233,7 @@ MainWindow::MainWindow(QWidget *parent) :
        trayVisible = false; notifyFlag=false; runbckgd = false; hasSubs = false;
        quitPlistEnd = false;
        readSettings();
+
 
        ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.30,(this->height() + ovlay->sizeHint().height())*0.80, ovlay->sizeHint().width()*3, ovlay->sizeHint().height());
        ovlay->hide();
@@ -297,6 +316,16 @@ void MainWindow::clear()
     stop();
 }
 
+void MainWindow::clearRecent()
+{
+    QSettings settings;
+
+  settings.setValue("Recent Files",QStringList());
+  readSettings();
+
+  recent->setEnabled(false);
+}
+
 
 void MainWindow::open(){
 
@@ -306,8 +335,13 @@ QStringList fileName = QFileDialog::getOpenFileNames(this, tr("Open Video"), QDi
 
 
       for(const QString &str: fileName){
-
           playlist->addMedia(QUrl::fromLocalFile((str)));
+
+          if(rcntCache.size()>5){
+               rcntCache.removeLast();
+         }
+             rcntCache.prepend(str);
+
           QString str2 = str.section('/', -1);
           plist.append(str2);
         }
@@ -315,7 +349,7 @@ QStringList fileName = QFileDialog::getOpenFileNames(this, tr("Open Video"), QDi
 
 
      viewer->setPlaylist(plist);
-  }
+}
 
 
 void MainWindow::changeVolume(int volume){
@@ -360,6 +394,15 @@ void MainWindow::mediaStateChanged(QMediaPlayer::State state)
 
         break;
     }
+
+}
+
+void MainWindow::openRecentFiles()
+{
+
+    QAction *action = qobject_cast<QAction *>(sender());
+        if (action)
+            loadMedia(action->data().toString());
 
 }
 
@@ -467,6 +510,11 @@ void MainWindow::loadMedia(QString media)
 
        playlist->addMedia(QUrl::fromLocalFile((media)));
 
+       if(rcntCache.size()>5){
+            rcntCache.removeLast();
+      }
+        rcntCache.prepend(media);
+
         media = media.section('/', -1);
        plist.append(media);
        viewer->setPlaylist(plist);
@@ -502,7 +550,7 @@ void MainWindow::loadPlayList(){
 void MainWindow::aboutIt()
 {
     QString title = tr("About Cleps");
-        QString text = "Cleps Video Player is a simply video player, no more, no less. \nyungtrizzle (C)2014";
+        QString text = "Cleps Video Player is simply a video player, no more, no less. \nyungtrizzle (C)2014";
 
         QMessageBox::about(this, title, text);
 
@@ -671,6 +719,19 @@ void MainWindow::readSettings()
              quitPlistEnd = true;
          }
 
+         rcntCache = settings.value("Recent Files").toStringList();
+
+         if(!rcntCache.isEmpty()){
+
+             for(const QString str:rcntCache){
+                 int i = rcntCache.indexOf(str);
+                 if(!str.isEmpty()){
+                 recentF[i]->setData(str);
+                 recentF[i]->setText(str.section('/', -1));
+                 recentF[i]->setVisible(true);
+             }
+         }
+}
 }
 
 void MainWindow::toggleHideWindow(QSystemTrayIcon::ActivationReason reason)
@@ -731,6 +792,16 @@ void MainWindow::seekNewPosition(int newPos)
 }
 
 void MainWindow::quit(){
+
+
+    QSettings settings;
+
+    while(rcntCache.size()>5){
+
+        rcntCache.removeLast();
+    }
+
+    settings.setValue("Recent Files",rcntCache);
 
     qApp->exit(0);
 

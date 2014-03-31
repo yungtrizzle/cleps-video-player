@@ -41,6 +41,7 @@ signals:
 public slots:
     void addSubs();
     void clear();
+    void clearRecent();
     void open();
     void quit();
     void play();
@@ -64,6 +65,7 @@ private slots:
     void durationChanged(qint64);
     void mediaChanged();
     void mediaStateChanged(QMediaPlayer::State);
+    void openRecentFiles();
     void positionChanged(qint64);
     void seekNewPosition(int newPos);
     void setPosition(int);
@@ -79,12 +81,13 @@ private slots:
 
 
 private:
-    QAction *opVid,*config,*mdlist,*subtitle,*mode1, *mode2, *mode3,*mode4, *saveList, *loadList;
+    QAction *opVid,*config,*mdlist,*subtitle,*mode1, *mode2, *mode3,*mode4, *saveList, *loadList, *cleaR;
+    QAction *recentF[5];
     QMediaPlayer *playerD;
     QMediaPlaylist *playlist;
     QMenuBar *gblMenu;
-    QMenu *fileMenu, *settingsMenu, *ctxt, *playlistModeMenu, *about;
-    QStringList plist;
+    QMenu *fileMenu, *settingsMenu, *ctxt, *playlistModeMenu, *about, *recent;
+    QStringList plist, rcntCache;
     Cleps_VidPlayer *player;
     QToolButton *playButton, *stopButton, *next, *previous;
     QSlider *seekr;

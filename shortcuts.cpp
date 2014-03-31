@@ -84,7 +84,7 @@ void shortcuts::keySequenceInput()
      QSettings settings;
     edit = new shortcutEditor(this);
    int row= -1;
-   QModelIndexList lst =   scutTable->selectionModel()->selection().indexes();
+   QModelIndexList lst = scutTable->selectionModel()->selection().indexes();
 
 
         if(lst.isEmpty()){

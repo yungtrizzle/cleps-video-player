@@ -1,4 +1,5 @@
-﻿/******************************************************************************
+﻿
+/******************************************************************************
 *   Cleps Video Player. Simply a media player, no more, no less.              *
 *   Copyright (C) 2014  Eshton Robateau <eshtonrob@gmail.com>                 *
 *                                                                             *
@@ -151,6 +152,7 @@ MainWindow::MainWindow(QWidget *parent) :
  seekr->setRange(0,0);
  seekr->setPageStep(1);
 
+
  volSlide = new volumeSlider;
  volSlide->setRange(0,100);
  volSlide->setValue(100);
@@ -166,7 +168,7 @@ MainWindow::MainWindow(QWidget *parent) :
      tBard->addWidget(seekr);
      tBard->addWidget(volSlide);
 
-    tBard->setFloatable(false);
+     tBard->setFloatable(false);
      tBard->setMovable(false);
      tBard->adjustSize();
 
@@ -364,6 +366,8 @@ void MainWindow::durationChanged(qint64 timed){
 
 void MainWindow::mediaChanged()
 {
+    QSettings settings;
+
     ovlay->hide();
     subs->clear();
     hasSubs = false;
@@ -376,6 +380,28 @@ void MainWindow::mediaChanged()
           showNativeNotify();
 }
 }
+
+    while(rcntCache.size()>5){
+
+        rcntCache.removeLast();
+    }
+
+    settings.setValue("Recent Files",rcntCache);
+
+    rcntCache = settings.value("Recent Files").toStringList();
+
+    if(!rcntCache.isEmpty()){
+
+        for(const QString str:rcntCache){
+            int i = rcntCache.indexOf(str);
+            if(!str.isEmpty()){
+            recentF[i]->setData(str);
+            recentF[i]->setText(str.section('/', -1));
+            recentF[i]->setVisible(true);
+        }
+    }
+}
+
 }
 
 void MainWindow::mediaStateChanged(QMediaPlayer::State state)
@@ -385,7 +411,8 @@ void MainWindow::mediaStateChanged(QMediaPlayer::State state)
         playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
         break;
     case QMediaPlayer::StoppedState:
-        if(quitPlistEnd && playlist->playbackMode()== QMediaPlaylist::Sequential){
+        if(quitPlistEnd && playlist->nextIndex() == 0){
+
             quit();
         }
 

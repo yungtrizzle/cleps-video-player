@@ -25,6 +25,8 @@
 #include <QDBusReply>
 #include <QDBusMetaType>
 #include <QVideoWidget>
+#include <QMimeType>
+
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -228,6 +230,7 @@ MainWindow::MainWindow(QWidget *parent) :
       connect(mode3,SIGNAL(triggered()),this,SLOT(setRepeatOne()));
       connect(mode4,SIGNAL(triggered()),this,SLOT(setRandom()));
 
+
        viewer = new playlistView(this);
        subs = new SubtitleProvider;
        connect(viewer,SIGNAL(removeIndex(QList<int>)), this, SLOT(removeMedia(QList<int>)));
@@ -292,6 +295,31 @@ void MainWindow::dropEvent(QDropEvent *event)
                 loadMedia(file.toLocalFile());
             }
         }
+
+}
+
+void MainWindow::hideEvent(QHideEvent *event)
+{
+
+    QUrl uri = playerD->currentMedia().canonicalResource().url();
+    QMimeType mime = db.mimeTypeForUrl(uri);
+
+   if(mime.name().contains("video")){
+        play();
+}
+       event->accept();
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    QUrl uri = playerD->currentMedia().canonicalResource().url();
+    QMimeType mime = db.mimeTypeForUrl(uri);
+
+
+    if(mime.name().contains("video")){
+    play();
+}
+    event->accept();
 
 }
 
@@ -792,8 +820,17 @@ void MainWindow::positionChanged(qint64 position){
     seekr->setValue(position);
     if(hasSubs){
     subs->setSubtitleTime(position);
+    }
 }
+
+void MainWindow::pauseMinimized(Qt::WindowState state)
+{
+    qDebug()<<state;
+
+  /*  if(state==Qt::WindowMinimized)
+        play(); */
 }
+
 
 void MainWindow::seekNewPosition(int newPos)
 {

@@ -20,6 +20,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QMimeDatabase>
 #include "cleps_vidplayer.h"
 #include "volumeslider.h"
 #include "playlistview.h"
@@ -35,6 +36,8 @@ public:
     void resizeEvent(QResizeEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
+    void hideEvent(QHideEvent *event);
+    void showEvent(QShowEvent *event);
 
 signals:
 
@@ -67,6 +70,7 @@ private slots:
     void mediaStateChanged(QMediaPlayer::State);
     void openRecentFiles();
     void positionChanged(qint64);
+    void pauseMinimized(Qt::WindowState state);
     void seekNewPosition(int newPos);
     void setPosition(int);
     void setRandom();
@@ -97,6 +101,7 @@ private:
     QShortcut *mte, *shwList, *ply, *stp, *nxt,*prv;
     QSystemTrayIcon *cleps;
     QLabel *ovlay;
+    QMimeDatabase db;
     bool notifyFlag, trayVisible, runbckgd, hasSubs, quitPlistEnd;
 
 };

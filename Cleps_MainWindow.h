@@ -32,14 +32,16 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = 0);
+    void changeEvent(QEvent *event);
     void closeEvent(QCloseEvent *event);
     void resizeEvent(QResizeEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
     void hideEvent(QHideEvent *event);
-    void showEvent(QShowEvent *event);
+
 
 signals:
+
 
 public slots:
     void addSubs();
@@ -70,7 +72,6 @@ private slots:
     void mediaStateChanged(QMediaPlayer::State);
     void openRecentFiles();
     void positionChanged(qint64);
-    void pauseMinimized(Qt::WindowState state);
     void seekNewPosition(int newPos);
     void setPosition(int);
     void setRandom();

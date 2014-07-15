@@ -32,7 +32,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
-    this->setGeometry(50,50,900,700);
+    this->setGeometry(50,50,1024,768);
     this->setWindowTitle("Cleps Video Player");
     this->setWindowIcon(QIcon(":/icons/cleps.png"));
 
@@ -230,7 +230,6 @@ MainWindow::MainWindow(QWidget *parent) :
       connect(mode3,SIGNAL(triggered()),this,SLOT(setRepeatOne()));
       connect(mode4,SIGNAL(triggered()),this,SLOT(setRandom()));
 
-
        viewer = new playlistView(this);
        subs = new SubtitleProvider;
        connect(viewer,SIGNAL(removeIndex(QList<int>)), this, SLOT(removeMedia(QList<int>)));
@@ -242,6 +241,24 @@ MainWindow::MainWindow(QWidget *parent) :
 
        ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.30,(this->height() + ovlay->sizeHint().height())*0.80, ovlay->sizeHint().width()*3, ovlay->sizeHint().height());
        ovlay->hide();
+
+}
+
+void MainWindow::changeEvent(QEvent *event)
+{
+
+    if (event->type() == QEvent::WindowStateChange && (isMinimized()||this->isVisible())){
+
+
+        QUrl uri = playerD->currentMedia().canonicalResource().url();
+        QMimeType mime = db.mimeTypeForUrl(uri);
+
+        if(mime.name().contains("video")){
+             play();
+     }
+
+    }
+
 }
 
 
@@ -309,20 +326,6 @@ void MainWindow::hideEvent(QHideEvent *event)
 }
        event->accept();
 }
-
-void MainWindow::showEvent(QShowEvent *event)
-{
-    QUrl uri = playerD->currentMedia().canonicalResource().url();
-    QMimeType mime = db.mimeTypeForUrl(uri);
-
-
-    if(mime.name().contains("video")){
-    play();
-}
-    event->accept();
-
-}
-
 
 void MainWindow::addSubs()
 {
@@ -821,14 +824,6 @@ void MainWindow::positionChanged(qint64 position){
     if(hasSubs){
     subs->setSubtitleTime(position);
     }
-}
-
-void MainWindow::pauseMinimized(Qt::WindowState state)
-{
-    qDebug()<<state;
-
-  /*  if(state==Qt::WindowMinimized)
-        play(); */
 }
 
 

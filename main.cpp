@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
 
     a.setOrganizationName("Cleps");
     a.setApplicationName("Cleps Video Player");
+    a.setApplicationVersion("0.21-7");
 
     QString locale = QLocale::system().name();
 
@@ -36,6 +37,7 @@ int main(int argc, char *argv[])
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QApplication::tr("A small video player."));
+    parser.addVersionOption();
     parser.addHelpOption();
     parser.addPositionalArgument("filename", QApplication::tr("A media file to play."));
 

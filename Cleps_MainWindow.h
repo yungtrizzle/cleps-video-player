@@ -21,6 +21,7 @@
 
 #include <QMainWindow>
 #include <QMimeDatabase>
+#include <QStatusBar>
 #include "cleps_vidplayer.h"
 #include "volumeslider.h"
 #include "playlistview.h"
@@ -63,6 +64,9 @@ public slots:
     void loadMedia(QString media);
     void loadPlayList();
 
+ protected:
+     bool eventFilter(QObject *obj, QEvent *ev);
+
 
 private slots:
     void aboutIt();
@@ -85,6 +89,7 @@ private slots:
     void viewSettings();
 
 
+
 private:
     QAction *opVid,*config,*mdlist,*subtitle,*mode1, *mode2, *mode3,*mode4, *saveList, *loadList, *cleaR;
     QAction *recentF[5];
@@ -101,9 +106,15 @@ private:
     SubtitleProvider *subs;
     QShortcut *mte, *shwList, *ply, *stp, *nxt,*prv;
     QSystemTrayIcon *cleps;
-    QLabel *ovlay;
+    QStatusBar *sbar;
+    QLabel *ovlay, *mediaTimeLbl;
     QMimeDatabase db;
     bool notifyFlag, trayVisible, runbckgd, hasSubs, quitPlistEnd;
+
+
+    QString millisToHHMMSS(qint64 millis);
+
+
 
 };
 

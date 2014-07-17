@@ -26,6 +26,7 @@
 #include <QDBusMetaType>
 #include <QVideoWidget>
 #include <QMimeType>
+#include <QHoverEvent>
 
 
 
@@ -153,6 +154,9 @@ MainWindow::MainWindow(QWidget *parent) :
  seekr = new QSlider(Qt::Horizontal);
  seekr->setRange(0,0);
  seekr->setPageStep(1);
+ seekr->setMouseTracking(true);
+ seekr->setAttribute(Qt::WA_Hover, true);
+ seekr->installEventFilter(this);
 
 
  volSlide = new volumeSlider;
@@ -175,6 +179,14 @@ MainWindow::MainWindow(QWidget *parent) :
      tBard->adjustSize();
 
      addToolBar(tBard);
+
+     mediaTimeLbl = new QLabel(tr("Media Duration  --:--"));
+
+     sbar = new QStatusBar();
+     sbar->addPermanentWidget(mediaTimeLbl);
+     sbar->addPermanentWidget(new QLabel);
+
+     setStatusBar(sbar);
 
      opVid->setShortcut(QKeySequence::Open);
      opVid->setShortcutContext(Qt::ApplicationShortcut);
@@ -230,10 +242,13 @@ MainWindow::MainWindow(QWidget *parent) :
       connect(mode3,SIGNAL(triggered()),this,SLOT(setRepeatOne()));
       connect(mode4,SIGNAL(triggered()),this,SLOT(setRandom()));
 
+
        viewer = new playlistView(this);
        subs = new SubtitleProvider;
+
        connect(viewer,SIGNAL(removeIndex(QList<int>)), this, SLOT(removeMedia(QList<int>)));
        connect(viewer,SIGNAL(swapIndex(int,int)),this,SLOT(swap(int, int)));
+
        trayVisible = false; notifyFlag=false; runbckgd = false; hasSubs = false;
        quitPlistEnd = false;
        readSettings();
@@ -392,7 +407,11 @@ void MainWindow::changeVolume(int volume){
 
 void MainWindow::durationChanged(qint64 timed){
 
+    QString drtin = "Media Duration " + millisToHHMMSS(timed);;
+
     seekr->setRange(0,timed);
+    mediaTimeLbl->setText(drtin);
+
 }
 
 void MainWindow::mediaChanged()
@@ -416,7 +435,7 @@ void MainWindow::mediaChanged()
 
         rcntCache.removeLast();
     }
-
+   rcntCache.removeDuplicates();
     settings.setValue("Recent Files",rcntCache);
 
     rcntCache = settings.value("Recent Files").toStringList();
@@ -605,6 +624,39 @@ void MainWindow::loadPlayList(){
 
 }
 
+bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
+{
+   if(obj == seekr){
+
+       if(ev->type() == QEvent::HoverEnter||ev->type() == QEvent::HoverMove){
+
+           QHoverEvent *hover = static_cast<QHoverEvent*>(ev);
+
+           QPoint hovPt = hover->pos();
+
+
+           float posRatio = hovPt.x() / (float )seekr->size().width();
+           qint64 sliderRange = seekr->maximum() - seekr->minimum();
+           qint64 sliderPosUnderMouse = seekr->minimum() + sliderRange * posRatio;
+
+            if(sliderPosUnderMouse > 0){
+
+           seekr->setToolTip(millisToHHMMSS(sliderPosUnderMouse));
+          }
+
+            return true;
+       }else{
+           return false;
+       }
+
+   }else{
+       return QMainWindow::eventFilter(obj, ev);
+   }
+
+
+
+}
+
 
 void MainWindow::aboutIt()
 {
@@ -716,6 +768,7 @@ void MainWindow::setupTray()
     connect(cleps,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(toggleHideWindow(QSystemTrayIcon::ActivationReason)));
 
     cleps->setContextMenu(ctxt);
+    cleps->setToolTip("Cleps Video Player");
     cleps->show();
     }
 }
@@ -818,6 +871,31 @@ void MainWindow::viewSettings()
     cfg->show();
 }
 
+QString MainWindow::millisToHHMMSS(qint64 millis)
+{
+     qint64 seconds = (millis / 1000) % 60;
+     qint64 minutes = (millis / (1000 * 60)) % 60;
+     qint64 hours = millis / (1000 * 60 * 60);
+     QString mins, secs;
+
+
+     if(minutes < 10){
+         mins = "0"+QString::number(minutes);
+     }else{
+         mins = QString::number(minutes);
+     }
+
+      if (seconds < 10){
+          secs = "0"+QString::number(seconds);
+      }else{
+          secs = QString::number(seconds);
+      }
+
+     return (QString::number(hours)+":"+mins+":"+secs);
+
+}
+
+
 void MainWindow::positionChanged(qint64 position){
 
     seekr->setValue(position);
@@ -860,7 +938,7 @@ void MainWindow::quit(){
 
         rcntCache.removeLast();
     }
-
+    rcntCache.removeDuplicates();
     settings.setValue("Recent Files",rcntCache);
 
     qApp->exit(0);

@@ -32,6 +32,8 @@ volumeSlider::volumeSlider(QWidget *parent) :
 
     volSlider = new QSlider(Qt::Vertical);
     volSlider->setRange(0,100);
+    volSlider->setPageStep(1);
+    volSlider->setSingleStep(1);
     connect(volSlider, SIGNAL(valueChanged(int)), this, SIGNAL(volumeChanged(int)));
 
 

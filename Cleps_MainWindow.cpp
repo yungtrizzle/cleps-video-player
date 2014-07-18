@@ -19,7 +19,6 @@
 
 #include "Cleps_MainWindow.h"
 #include "cleps_vidplayer.h"
-#include "settings_dialog.h"
 #include "subtitleprovider.h"
 #include <QDBusInterface>
 #include <QDBusReply>
@@ -27,6 +26,7 @@
 #include <QVideoWidget>
 #include <QMimeType>
 #include <QHoverEvent>
+#include <QDataStream>
 
 
 
@@ -95,9 +95,9 @@ MainWindow::MainWindow(QWidget *parent) :
     settingsMenu = new QMenu(tr("Tools"));
     config = new QAction(tr("Preferences"), this);
     mdlist = new QAction(tr("View Playlist"), this);
-    mdlist->setCheckable(true);
     subtitle = new QAction(tr("Add Subtitle File"),this);
 
+    bookmk = new QAction(tr("Manage Bookmarks"), this);
 
     mode1 = new QAction(tr("Sequential"), this);
     mode1->setCheckable(true);
@@ -112,6 +112,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     settingsMenu->addAction(subtitle);
     settingsMenu->addSeparator();
+    settingsMenu->addAction(bookmk);
     settingsMenu->addAction(mdlist);
     playlistModeMenu = settingsMenu->addMenu(tr("Playlist Mode"));
     settingsMenu->addSeparator();
@@ -180,9 +181,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
      addToolBar(tBard);
 
+     bookmark = new QToolButton();
+     bookmark->setToolTip(tr("Create Bookmark"));
+     bookmark->setIcon(QIcon(":/icons/goldstar.png"));
+
      mediaTimeLbl = new QLabel(tr("Media Duration  --:--"));
 
      sbar = new QStatusBar();
+     sbar->addPermanentWidget(bookmark);
      sbar->addPermanentWidget(mediaTimeLbl);
      sbar->addPermanentWidget(new QLabel);
 
@@ -208,6 +214,8 @@ MainWindow::MainWindow(QWidget *parent) :
      nxt->setContext(Qt::ApplicationShortcut);
      prv = new QShortcut(this);
      prv->setContext(Qt::ApplicationShortcut);
+     bkmarks = new QShortcut(this);
+     bkmarks->setContext(Qt::ApplicationShortcut);
 
      connect(opVid, SIGNAL(triggered()), this, SLOT(open()));
      connect(quit, SIGNAL(triggered()), this, SLOT(quit()));
@@ -217,6 +225,7 @@ MainWindow::MainWindow(QWidget *parent) :
      connect(saveList,SIGNAL(triggered()),this,SLOT(savePlayList()));
      connect(loadList,SIGNAL(triggered()),this,SLOT(loadPlayList()));
      connect(cleaR, SIGNAL(triggered()), this, SLOT(clearRecent()));
+     connect(bookmk, SIGNAL(triggered()),this,SLOT(showManager()));
 
        connect(playerD, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
        connect(seekr, SIGNAL(sliderMoved(int)),this, SLOT(setPosition(int)));
@@ -242,6 +251,8 @@ MainWindow::MainWindow(QWidget *parent) :
       connect(mode3,SIGNAL(triggered()),this,SLOT(setRepeatOne()));
       connect(mode4,SIGNAL(triggered()),this,SLOT(setRandom()));
 
+      connect(bookmark,SIGNAL(clicked()),this,SLOT(bmarks()));
+      connect(bkmarks,SIGNAL(activated()),this,SLOT(bmarks()));
 
        viewer = new playlistView(this);
        subs = new SubtitleProvider;
@@ -252,6 +263,15 @@ MainWindow::MainWindow(QWidget *parent) :
        trayVisible = false; notifyFlag=false; runbckgd = false; hasSubs = false;
        quitPlistEnd = false;
        readSettings();
+       openBookmarks();
+
+       cfg = new settings_dialog(this);
+       connect(cfg, SIGNAL(accepted()),this, SLOT(readSettings()));
+
+        manager = new bookmarkManager(this, (getBookmark()));
+        connect(manager, SIGNAL(createMark()),this,SLOT(bmarks()));
+        connect(manager,SIGNAL(deleteMark(QUrl)),this,SLOT(deleteBmark(QUrl)));
+        connect(this,SIGNAL(newBookmark()),this,SLOT(reloadBmarks()));
 
 
        ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.30,(this->height() + ovlay->sizeHint().height())*0.80, ovlay->sizeHint().width()*3, ovlay->sizeHint().height());
@@ -339,7 +359,16 @@ void MainWindow::hideEvent(QHideEvent *event)
    if(mime.name().contains("video")){
         play();
 }
-       event->accept();
+   event->accept();
+}
+
+QMap<QUrl, qint64> *MainWindow::getBookmark()
+{
+    QMap<QUrl, qint64> *mks;
+    mks = &bookmarks;
+
+    return mks;
+
 }
 
 void MainWindow::addSubs()
@@ -405,6 +434,25 @@ void MainWindow::changeVolume(int volume){
     playerD->setVolume(volume);
 }
 
+void MainWindow::deleteBmark(QUrl uri)
+{
+
+    QFile file(QDir::homePath()+"/.cleps.bmk");
+
+        file.open(QIODevice::WriteOnly);
+
+       QDataStream rwout(&file);
+       rwout.setVersion(QDataStream::Qt_5_3);
+       bookmarks.remove(uri);
+       rwout<<bookmarks;
+
+       file.close();
+
+       openBookmarks();
+
+    emit newBookmark();
+}
+
 void MainWindow::durationChanged(qint64 timed){
 
     QString drtin = "Media Duration " + millisToHHMMSS(timed);;
@@ -412,6 +460,18 @@ void MainWindow::durationChanged(qint64 timed){
     seekr->setRange(0,timed);
     mediaTimeLbl->setText(drtin);
 
+}
+
+void MainWindow::insertMark()
+{
+
+    QUrl url = playerD->currentMedia().canonicalResource().url();
+    qint64 position = playerD->position();
+
+    if(!playerD->currentMedia().isNull()){
+
+    bookmarks.insert(url, position);
+    }
 }
 
 void MainWindow::mediaChanged()
@@ -547,10 +607,9 @@ void MainWindow::showPlaylist()
     viewer->show();
     viewer->raise();
     viewer->activateWindow();
-    mdlist->setChecked(true);
+
 }else{
         viewer->hide();
-        mdlist->setChecked(false);
 
     }
 }
@@ -666,6 +725,25 @@ void MainWindow::aboutIt()
         QMessageBox::about(this, title, text);
 
 }
+void MainWindow::bmarks()
+{
+
+
+    QFile file(QDir::homePath()+"/.cleps.bmk");
+
+        file.open(QIODevice::WriteOnly);
+
+       QDataStream rwout(&file);
+       rwout.setVersion(QDataStream::Qt_5_3);
+
+         insertMark();
+         rwout<<bookmarks;
+
+         file.close();
+
+         openBookmarks();
+         emit newBookmark();
+}
 
 
 void MainWindow::play(){
@@ -773,6 +851,11 @@ void MainWindow::setupTray()
     }
 }
 
+void MainWindow::showManager()
+{
+    manager->show();
+}
+
 void MainWindow::showNativeNotify()
 {
     //argumenList code from https://github.com/rohieb/StratumsphereTrayIcon
@@ -866,8 +949,6 @@ void MainWindow::toggleHideWindow(QSystemTrayIcon::ActivationReason reason)
 
 void MainWindow::viewSettings()
 {
-    settings_dialog *cfg = new settings_dialog(this);
-    connect(cfg, SIGNAL(accepted()),this, SLOT(readSettings()));
     cfg->show();
 }
 
@@ -895,6 +976,27 @@ QString MainWindow::millisToHHMMSS(qint64 millis)
 
 }
 
+void MainWindow::openBookmarks()
+{
+
+    QFile file(QDir::homePath()+"/.cleps.bmk");
+
+    if(file.exists()){
+
+        file.open(QIODevice::ReadOnly);
+
+       QDataStream rwout(&file);
+       rwout.setVersion(QDataStream::Qt_5_3);
+
+         rwout >> bookmarks;
+
+        // qDebug()<<bookmarks.keys() << bookmarks.values();
+
+         file.close();
+
+}
+
+}
 
 void MainWindow::positionChanged(qint64 position){
 
@@ -902,6 +1004,11 @@ void MainWindow::positionChanged(qint64 position){
     if(hasSubs){
     subs->setSubtitleTime(position);
     }
+}
+
+void MainWindow::reloadBmarks()
+{
+    manager->reload();
 }
 
 

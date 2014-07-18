@@ -22,10 +22,13 @@
 #include <QMainWindow>
 #include <QMimeDatabase>
 #include <QStatusBar>
+#include <QMap>
 #include "cleps_vidplayer.h"
 #include "volumeslider.h"
 #include "playlistview.h"
 #include "subtitleprovider.h"
+#include "settings_dialog.h"
+#include "bookmarkmanager.h"
 
 
 class MainWindow : public QMainWindow
@@ -39,9 +42,11 @@ public:
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
     void hideEvent(QHideEvent *event);
+    QMap<QUrl, qint64> * getBookmark();
 
 
 signals:
+    void newBookmark();
 
 
 public slots:
@@ -70,12 +75,16 @@ public slots:
 
 private slots:
     void aboutIt();
+    void bmarks();
     void changeVolume(int);
+    void deleteBmark(QUrl uri);
     void durationChanged(qint64);
+    void insertMark();
     void mediaChanged();
     void mediaStateChanged(QMediaPlayer::State);
     void openRecentFiles();
     void positionChanged(qint64);
+    void reloadBmarks();
     void seekNewPosition(int newPos);
     void setPosition(int);
     void setRandom();
@@ -83,6 +92,7 @@ private slots:
     void setRepeatOne();
     void setSequential();
     void setupTray();
+    void showManager();
     void showNativeNotify();
     void readSettings();
     void toggleHideWindow(QSystemTrayIcon::ActivationReason reason);
@@ -92,28 +102,31 @@ private slots:
 
 private:
     QAction *opVid,*config,*mdlist,*subtitle,*mode1, *mode2, *mode3,*mode4, *saveList, *loadList, *cleaR;
-    QAction *recentF[5];
+    QAction *recentF[5], *bookmk;
+    QMap<QUrl,qint64> bookmarks;
     QMediaPlayer *playerD;
     QMediaPlaylist *playlist;
     QMenuBar *gblMenu;
     QMenu *fileMenu, *settingsMenu, *ctxt, *playlistModeMenu, *about, *recent;
     QStringList plist, rcntCache;
     Cleps_VidPlayer *player;
-    QToolButton *playButton, *stopButton, *next, *previous;
+    QToolButton *playButton, *stopButton, *next, *previous, *bookmark;
     QSlider *seekr;
     volumeSlider *volSlide;
     playlistView *viewer;
     SubtitleProvider *subs;
-    QShortcut *mte, *shwList, *ply, *stp, *nxt,*prv;
+    QShortcut *mte, *shwList, *ply, *stp, *nxt,*prv, *bkmarks;
     QSystemTrayIcon *cleps;
     QStatusBar *sbar;
     QLabel *ovlay, *mediaTimeLbl;
     QMimeDatabase db;
     bool notifyFlag, trayVisible, runbckgd, hasSubs, quitPlistEnd;
+    settings_dialog *cfg;
+    bookmarkManager *manager;
 
 
     QString millisToHHMMSS(qint64 millis);
-
+    void openBookmarks();
 
 
 };

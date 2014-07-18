@@ -23,8 +23,8 @@ settings_dialog::settings_dialog(QWidget *parent) :
     QDialog(parent)
 {
 
-    setMinimumSize(550,400);
-    setFixedWidth(550);
+
+    setFixedSize(550, 400);
         contents = new QListWidget;
         contents->setViewMode(QListView::IconMode);
         contents->setIconSize(QSize(96, 84));

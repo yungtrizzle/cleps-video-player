@@ -23,7 +23,8 @@ SOURCES += main.cpp\
     shortcuteditor.cpp \
     shortcuts.cpp \
     behaviour_settings.cpp \
-    subtitleprovider.cpp
+    subtitleprovider.cpp \
+    bookmarkmanager.cpp
 
 HEADERS  += cleps_vidplayer.h \
     Cleps_MainWindow.h \
@@ -33,7 +34,8 @@ HEADERS  += cleps_vidplayer.h \
     shortcuteditor.h \
     shortcuts.h \
     behaviour_settings.h \
-    subtitleprovider.h
+    subtitleprovider.h \
+    bookmarkmanager.h
 
 TRANSLATIONS =
 

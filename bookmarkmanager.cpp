@@ -66,6 +66,7 @@ bookmarkManager::bookmarkManager(QWidget *parent, QMap<QUrl, qint64> *mks) :
      connect(create, SIGNAL(clicked()),this,SLOT(addBookmark()));
      connect(deleted, SIGNAL(clicked()),this,SLOT(removeBookmark()));
      connect(cler, SIGNAL(clicked()),this,SLOT(clearDb()));
+     connect(table,SIGNAL(doubleClicked(QModelIndex)), this->parent(),SLOT(playBookmark(QModelIndex)));
 
 }
 

@@ -765,6 +765,20 @@ void MainWindow::play(){
 
 }
 
+void MainWindow::playBookmark(QModelIndex index)
+{
+
+    QUrl ur = bookmarks.keys().at(index.row());
+    qDebug()<<millisToHHMMSS(bookmarks.value(ur));
+
+    loadMedia(ur.toLocalFile());
+    playlist->setCurrentIndex(playlist->mediaCount());
+    playerD->stop();
+    playerD->setVideoOutput(player->videoWidget);
+    play();
+    playerD->setPosition(bookmarks.value(ur));
+}
+
 void MainWindow::playd(QModelIndex index)
 {
     playlist->setCurrentIndex(index.row());

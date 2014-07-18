@@ -56,6 +56,7 @@ public slots:
     void open();
     void quit();
     void play();
+    void playBookmark(QModelIndex index);
     void playd(QModelIndex index);
     void stop();
     void mute();

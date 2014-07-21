@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 
     a.setOrganizationName("Cleps");
     a.setApplicationName("Cleps Video Player");
-    a.setApplicationVersion("0.21-7");
+    a.setApplicationVersion("0.21.1");
 
     QString locale = QLocale::system().name();
 

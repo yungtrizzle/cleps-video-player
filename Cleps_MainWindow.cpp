@@ -412,6 +412,7 @@ QStringList fileName = QFileDialog::getOpenFileNames(this, tr("Open Media"), QDi
 
 
       for(const QString &str: fileName){
+
           playlist->addMedia(QUrl::fromLocalFile((str)));
 
           if(rcntCache.size()>5){
@@ -423,7 +424,6 @@ QStringList fileName = QFileDialog::getOpenFileNames(this, tr("Open Media"), QDi
           plist.append(str2);
         }
       }
-
 
      viewer->setPlaylist(plist);
 }
@@ -769,11 +769,13 @@ void MainWindow::playBookmark(QModelIndex index)
 {
 
     QUrl ur = bookmarks.keys().at(index.row());
-    qDebug()<<millisToHHMMSS(bookmarks.value(ur));
-
     loadMedia(ur.toLocalFile());
-    playlist->setCurrentIndex(playlist->mediaCount());
-    playerD->stop();
+
+     int inde = playlist->mediaCount()-1;
+
+    playlist->setCurrentIndex(inde);
+     playerD->stop();
+     playerD->stop();
     playerD->setVideoOutput(player->videoWidget);
     play();
     playerD->setPosition(bookmarks.value(ur));

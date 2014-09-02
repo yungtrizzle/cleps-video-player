@@ -23,6 +23,7 @@
 #include <QMimeDatabase>
 #include <QStatusBar>
 #include <QMap>
+#include <QErrorMessage>
 #include "cleps_vidplayer.h"
 #include "volumeslider.h"
 #include "playlistview.h"
@@ -42,6 +43,7 @@ public:
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
     void hideEvent(QHideEvent *event);
+    void throwFilenotFound(QString str);
     QMap<QUrl, qint64> * getBookmark();
 
 
@@ -69,6 +71,7 @@ public slots:
     void swap(int old, int newd);
     void loadMedia(QString media);
     void loadPlayList();
+   
 
  protected:
      bool eventFilter(QObject *obj, QEvent *ev);
@@ -121,6 +124,7 @@ private:
     QStatusBar *sbar;
     QLabel *ovlay, *mediaTimeLbl;
     QMimeDatabase db;
+    QErrorMessage err;
     bool notifyFlag, trayVisible, runbckgd, hasSubs, quitPlistEnd;
     settings_dialog *cfg;
     bookmarkManager *manager;

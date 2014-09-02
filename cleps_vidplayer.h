@@ -37,6 +37,8 @@ public:
 public slots:
    void context(QPoint pos);
 
+protected :
+
 private slots:
    void exitFullScreen();
    void fullScreen();

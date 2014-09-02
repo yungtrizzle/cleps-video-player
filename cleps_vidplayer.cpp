@@ -114,6 +114,7 @@ void Cleps_VidPlayer::context(QPoint pos)
 
 }
 
+
 void Cleps_VidPlayer::exitFullScreen()
 {
     if(videoWidget->isFullScreen()){

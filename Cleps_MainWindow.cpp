@@ -362,6 +362,17 @@ void MainWindow::hideEvent(QHideEvent *event)
    event->accept();
 }
 
+
+void MainWindow::throwFilenotFound(QString str)
+{
+  QString errstrn = "Cannot find File "+str;
+  
+  err.showMessage(errstrn);
+  qDebug()<<errstrn;
+  
+}
+
+
 QMap<QUrl, qint64> *MainWindow::getBookmark()
 {
     QMap<QUrl, qint64> *mks;
@@ -412,8 +423,10 @@ QStringList fileName = QFileDialog::getOpenFileNames(this, tr("Open Media"), QDi
 
 
       for(const QString &str: fileName){
+	
+	if(QFile::exists(str)){
 
-          playlist->addMedia(QUrl::fromLocalFile((str)));
+         playlist->addMedia(QUrl::fromLocalFile((str)));
 
           if(rcntCache.size()>5){
                rcntCache.removeLast();
@@ -422,9 +435,12 @@ QStringList fileName = QFileDialog::getOpenFileNames(this, tr("Open Media"), QDi
 
           QString str2 = str.section('/', -1);
           plist.append(str2);
-        }
+        }else{
+	  throwFilenotFound(str);
+	}
       }
-
+     }
+     
      viewer->setPlaylist(plist);
 }
 
@@ -618,7 +634,9 @@ void MainWindow::showSub()
 {
     if(ovlay->isHidden()){
 
-    ovlay->show();}
+    ovlay->show();
+      
+    }
    QString txy = subs->subtitle();
     ovlay->setText(txy);
     ovlay->adjustSize();
@@ -642,10 +660,12 @@ void MainWindow::swap(int old, int newd)
 
 void MainWindow::loadMedia(QString media)
 {
+ 
 
-    if (!media.isEmpty()){
+    if (!media.isEmpty()&& QFile::exists(media)){
 
-       playlist->addMedia(QUrl::fromLocalFile((media)));
+      playlist->addMedia(QUrl::fromLocalFile((media)));
+      
 
        if(rcntCache.size()>5){
             rcntCache.removeLast();
@@ -655,6 +675,9 @@ void MainWindow::loadMedia(QString media)
         media = media.section('/', -1);
        plist.append(media);
        viewer->setPlaylist(plist);
+    }else{
+    
+      throwFilenotFound(media);
     }
 }
 
@@ -762,7 +785,7 @@ void MainWindow::play(){
     }else{
     setWindowTitle(plist.value(playlist->currentIndex())+" - Cleps Video Player");
     }
-
+    
 }
 
 void MainWindow::playBookmark(QModelIndex index)
@@ -894,7 +917,7 @@ void MainWindow::showNativeNotify()
     QDBusInterface notfy("org.freedesktop.Notifications", "/org/freedesktop/Notifications", "org.freedesktop.Notifications");
     QDBusReply<int> reply = notfy.callWithArgumentList(QDBus::AutoDetect, "Notify", argumentList);
 
-                    qDebug() << reply.error();
+                   // qDebug() << reply.error();
 }
 
 

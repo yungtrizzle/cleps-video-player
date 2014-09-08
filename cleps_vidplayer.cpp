@@ -27,7 +27,8 @@ Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
 {
     videoWidget = new QVideoWidget(this);
     videoWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-
+    videoWidget->setAspectRatioMode(Qt::IgnoreAspectRatio);
+    
     QBoxLayout *mreLayout = new QHBoxLayout;
     mreLayout->setMargin(0);
     mreLayout->setSpacing(0);

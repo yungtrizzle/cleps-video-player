@@ -365,7 +365,7 @@ void MainWindow::hideEvent(QHideEvent *event)
 
 void MainWindow::throwFilenotFound(QString str)
 {
-  QString errstrn = "Cannot find File "+str;
+  QString errstrn = tr("Cannot find File ")+str;
   
   err.showMessage(errstrn);
   qDebug()<<errstrn;

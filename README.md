@@ -10,7 +10,11 @@ Cleps does not support Cd/Dvd i/o and will not transcode files. It depends on Qt
 Building
 =================
  Cleps needs only 2 steps to build
- 1) run qmake on the sources
+ 1) run cmake on the sources
  2) run make to compile
  
- *note that building requires a c++11 compiler (a few lines were better expressed in c++11)
+=>note that building requires a c++11 compiler (a few lines were better expressed in c++11)
+
+=>pkgbuild for ArchLinux is available in the AUR
+
+=>Building from qmake is still supported for compatibility reasons

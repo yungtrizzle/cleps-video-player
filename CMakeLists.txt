@@ -36,3 +36,5 @@ set(cleps_RESOURCES icons.qrc)
 
 add_executable(cleps ${cleps_SOURCES} ${cleps_Headers} ${cleps_RESOURCES})
 target_link_libraries(cleps Qt5::Widgets Qt5::Multimedia Qt5::MultimediaWidgets Qt5::DBus)
+install(TARGETS cleps RUNTIME DESTINATION bin)
+

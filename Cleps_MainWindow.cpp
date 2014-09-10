@@ -19,7 +19,6 @@
 
 #include "Cleps_MainWindow.h"
 #include "cleps_vidplayer.h"
-#include "subtitleprovider.h"
 #include <QDBusInterface>
 #include <QDBusReply>
 #include <QDBusMetaType>
@@ -48,20 +47,8 @@ MainWindow::MainWindow(QWidget *parent) :
     playlist->setPlaybackMode(QMediaPlaylist::Sequential);
 
     setCentralWidget(player);
-
+     
     setAcceptDrops(true);
-
-    ovlay = new QLabel(centralWidget());
-    ovlay->setPalette(Qt::transparent);
-    ovlay->setAttribute(Qt::WA_TransparentForMouseEvents);
-    QPalette p;
-    p.setBrush(QPalette::Foreground, QBrush(Qt::white));
-    ovlay->setPalette(p);
-    QFont font("" , 18);
-    ovlay->setFont(font);
-    ovlay->setTextFormat(Qt::RichText);
-    ovlay->setAlignment(Qt::AlignCenter);
-
 
     fileMenu = new QMenu(tr("&Media"));
     opVid = new QAction(tr("&Add to Playlist"), this);
@@ -95,23 +82,25 @@ MainWindow::MainWindow(QWidget *parent) :
     settingsMenu = new QMenu(tr("Tools"));
     config = new QAction(tr("Preferences"), this);
     mdlist = new QAction(tr("View Playlist"), this);
-    subtitle = new QAction(tr("Add Subtitle File"),this);
-
     bookmk = new QAction(tr("Manage Bookmarks"), this);
 
     mode1 = new QAction(tr("Sequential"), this);
     mode1->setCheckable(true);
-    mode1->setChecked(true);
     mode2 = new QAction(tr("Repeat"), this);
     mode2->setCheckable(true);
     mode3 = new QAction(tr("Repeat One"), this);
     mode3->setCheckable(true);
     mode4 = new QAction(tr("Random"), this);
     mode4->setCheckable(true);
-
-
-    settingsMenu->addAction(subtitle);
-    settingsMenu->addSeparator();
+       
+    
+    modeGrp = new QActionGroup(this);
+    modeGrp->addAction(mode1);
+    modeGrp->addAction(mode2);
+    modeGrp->addAction(mode3);
+    modeGrp->addAction(mode4);
+    mode1->setChecked(true);
+       
     settingsMenu->addAction(bookmk);
     settingsMenu->addAction(mdlist);
     playlistModeMenu = settingsMenu->addMenu(tr("Playlist Mode"));
@@ -169,8 +158,8 @@ MainWindow::MainWindow(QWidget *parent) :
      QToolBar *tBard = new QToolBar(tr("View Transport"));
 
      tBard->addWidget(playButton);
-     tBard->addWidget(stopButton);
      tBard->addWidget(previous);
+     tBard->addWidget(stopButton);
      tBard->addWidget(next);
      tBard->addWidget(seekr);
      tBard->addWidget(volSlide);
@@ -179,16 +168,31 @@ MainWindow::MainWindow(QWidget *parent) :
      tBard->setMovable(false);
      tBard->adjustSize();
 
+     
      addToolBar(tBard);
+     
 
+     ffwd = new QToolButton();
+     ffwd->setToolTip(tr("Fast Foward, click twice to play at normal rate"));
+     ffwd->setIcon(style()->standardIcon(QStyle::SP_MediaSeekForward));
+     
+     rwind = new QToolButton();
+     rwind->setToolTip(tr("Reverse, click twice to play at normal rate"));
+     rwind->setIcon(style()->standardIcon(QStyle::SP_MediaSeekBackward));
+     
+     
      bookmark = new QToolButton();
      bookmark->setToolTip(tr("Create Bookmark"));
      bookmark->setIcon(QIcon(":/icons/goldstar.png"));
 
-     mediaTimeLbl = new QLabel(tr("Media Duration  --:--"));
+     mediaTimeLbl = new QLabel("--:--/--:--");
+     mediaTimeLbl->setToolTip(tr("Media Duration"));
 
      sbar = new QStatusBar();
+     sbar->addPermanentWidget(rwind);
+     sbar->addPermanentWidget(ffwd);
      sbar->addPermanentWidget(bookmark);
+     sbar->addPermanentWidget(new QLabel);
      sbar->addPermanentWidget(mediaTimeLbl);
      sbar->addPermanentWidget(new QLabel);
 
@@ -221,7 +225,6 @@ MainWindow::MainWindow(QWidget *parent) :
      connect(quit, SIGNAL(triggered()), this, SLOT(quit()));
      connect(config,SIGNAL(triggered()),this,SLOT(viewSettings()));
      connect(mdlist, SIGNAL(triggered()), this,SLOT(showPlaylist()));
-     connect(subtitle,SIGNAL(triggered()),this,SLOT(addSubs()));
      connect(saveList,SIGNAL(triggered()),this,SLOT(savePlayList()));
      connect(loadList,SIGNAL(triggered()),this,SLOT(loadPlayList()));
      connect(cleaR, SIGNAL(triggered()), this, SLOT(clearRecent()));
@@ -251,11 +254,14 @@ MainWindow::MainWindow(QWidget *parent) :
       connect(mode3,SIGNAL(triggered()),this,SLOT(setRepeatOne()));
       connect(mode4,SIGNAL(triggered()),this,SLOT(setRandom()));
 
+      
+      connect(ffwd,SIGNAL(clicked()),this,SLOT(fastForward()));
+      connect(rwind,SIGNAL(clicked()),this,SLOT(rewind()));
       connect(bookmark,SIGNAL(clicked()),this,SLOT(bmarks()));
       connect(bkmarks,SIGNAL(activated()),this,SLOT(bmarks()));
 
        viewer = new playlistView(this);
-       subs = new SubtitleProvider;
+    
 
        connect(viewer,SIGNAL(removeIndex(QList<int>)), this, SLOT(removeMedia(QList<int>)));
        connect(viewer,SIGNAL(swapIndex(int,int)),this,SLOT(swap(int, int)));
@@ -272,10 +278,6 @@ MainWindow::MainWindow(QWidget *parent) :
         connect(manager, SIGNAL(createMark()),this,SLOT(bmarks()));
         connect(manager,SIGNAL(deleteMark(QUrl)),this,SLOT(deleteBmark(QUrl)));
         connect(this,SIGNAL(newBookmark()),this,SLOT(reloadBmarks()));
-
-
-       ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.30,(this->height() + ovlay->sizeHint().height())*0.80, ovlay->sizeHint().width()*3, ovlay->sizeHint().height());
-       ovlay->hide();
 
 }
 
@@ -310,18 +312,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 }
 
-
-void MainWindow::resizeEvent(QResizeEvent *event)
-{
-
-if(hasSubs){
-
-    ovlay->setGeometry((this->width() - ovlay->sizeHint().width())*0.30,(this->height() + ovlay->sizeHint().height())*0.80, ovlay->sizeHint().width()*3, ovlay->sizeHint().height());
-
-}
-    event->accept();
-
-}
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 {
@@ -382,19 +372,6 @@ QMap<QUrl, qint64> *MainWindow::getBookmark()
 
 }
 
-void MainWindow::addSubs()
-{
-
-    QString subFile = QFileDialog::getOpenFileName(this, tr("Open Subtitle"),QDir::homePath());
-
-    if(!subFile.isEmpty()){
-
-    subs->setFilename(QUrl::fromLocalFile(subFile));
-    connect(subs,SIGNAL(subtitleChanged()),this,SLOT(showSub()));
-    hasSubs = true;
-
-}
-}
 
 void MainWindow::clear()
 {
@@ -428,11 +405,12 @@ QStringList fileName = QFileDialog::getOpenFileNames(this, tr("Open Media"), QDi
 
          playlist->addMedia(QUrl::fromLocalFile((str)));
 
+	 if(historyFlag){
           if(rcntCache.size()>5){
                rcntCache.removeLast();
          }
              rcntCache.prepend(str);
-
+	 }
           QString str2 = str.section('/', -1);
           plist.append(str2);
         }else{
@@ -471,8 +449,8 @@ void MainWindow::deleteBmark(QUrl uri)
 
 void MainWindow::durationChanged(qint64 timed){
 
-    QString drtin = "Media Duration " + millisToHHMMSS(timed);;
-
+    QString drtin = "--:--/" + millisToHHMMSS(timed);
+    durtion = timed;
     seekr->setRange(0,timed);
     mediaTimeLbl->setText(drtin);
 
@@ -494,8 +472,6 @@ void MainWindow::mediaChanged()
 {
     QSettings settings;
 
-    ovlay->hide();
-    subs->clear();
     hasSubs = false;
     if(playlist->currentMedia().isNull()){
         setWindowTitle("Cleps Video Player");
@@ -564,11 +540,13 @@ void MainWindow::mute(){
 
     if(playerD->isMuted()){
     playerD->setMuted(false);
+    volSlide->changeIcon(style()->standardIcon(QStyle::SP_MediaVolume));
     volSlide->setDisabled(false);
                 }
 
     else{
           playerD->setMuted(true);
+	  volSlide->changeIcon(style()->standardIcon(QStyle::SP_MediaVolumeMuted));
           volSlide->setDisabled(true);
     }
     }
@@ -630,18 +608,6 @@ void MainWindow::showPlaylist()
     }
 }
 
-void MainWindow::showSub()
-{
-    if(ovlay->isHidden()){
-
-    ovlay->show();
-      
-    }
-   QString txy = subs->subtitle();
-    ovlay->setText(txy);
-    ovlay->adjustSize();
-}
-
 void MainWindow::swap(int old, int newd)
 {
 
@@ -667,11 +633,13 @@ void MainWindow::loadMedia(QString media)
       playlist->addMedia(QUrl::fromLocalFile((media)));
       
 
+      if(historyFlag){
        if(rcntCache.size()>5){
             rcntCache.removeLast();
       }
         rcntCache.prepend(media);
-
+      }
+      
         media = media.section('/', -1);
        plist.append(media);
        viewer->setPlaylist(plist);
@@ -705,6 +673,33 @@ void MainWindow::loadPlayList(){
         }
 
 }
+
+void MainWindow::fastForward()
+{
+   qreal rate = playerD->playbackRate();
+  
+   if(rate == 1.0){
+     playerD->setPlaybackRate(2.0);
+  }else {
+    playerD->setPlaybackRate(1.0);
+ }
+}
+
+void MainWindow::rewind()
+{
+
+ qreal rate = playerD->playbackRate();
+  
+   if(rate == 1.0){
+     playerD->setPlaybackRate(-1.0);
+  }else {
+    playerD->setPlaybackRate(1.0);
+ }  
+  
+}
+
+
+
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
 {
@@ -835,38 +830,21 @@ void MainWindow::setPosition(int position){
 void MainWindow::setRandom()
 {
     playlist->setPlaybackMode(QMediaPlaylist::Random);
-    mode1->setChecked(false);
-    mode2->setChecked(false);
-    mode3->setChecked(false);
-    mode4->setChecked(true);
 }
 
 void MainWindow::setRepeat()
 {
     playlist->setPlaybackMode(QMediaPlaylist::Loop);
-    mode1->setChecked(false);
-    mode2->setChecked(true);
-    mode3->setChecked(false);
-    mode4->setChecked(false);
 }
 
 void MainWindow::setRepeatOne()
 {
     playlist->setPlaybackMode(QMediaPlaylist::CurrentItemInLoop);
-    mode1->setChecked(false);
-    mode2->setChecked(false);
-    mode3->setChecked(true);
-    mode4->setChecked(false);
-
 }
 
 void MainWindow::setSequential()
 {
     playlist->setPlaybackMode(QMediaPlaylist::Sequential);
-     mode1->setChecked(true);
-     mode2->setChecked(false);
-     mode3->setChecked(false);
-     mode4->setChecked(false);
 }
 
 void MainWindow::setupTray()
@@ -874,7 +852,11 @@ void MainWindow::setupTray()
     if(!trayVisible){
 
     cleps=new QSystemTrayIcon(QIcon(":/icons/cleps.png"),this);
+    medName = new QAction(tr("No Media"),0);
+    
     ctxt = new QMenu(this);
+    ctxt->addAction(medName);
+    ctxt->addSeparator();
     ctxt->addAction(tr("Play/Pause"),this, SLOT(play()));
     ctxt->addAction(tr("Previous"),this, SLOT(previousMedia()));
     ctxt->addAction(tr("Next"),this, SLOT(nextMedia()));
@@ -918,6 +900,10 @@ void MainWindow::showNativeNotify()
     QDBusReply<int> reply = notfy.callWithArgumentList(QDBus::AutoDetect, "Notify", argumentList);
 
                    // qDebug() << reply.error();
+    
+    medName->setText(plist.value(playlist->currentIndex()));
+    
+    
 }
 
 
@@ -1040,9 +1026,11 @@ void MainWindow::openBookmarks()
 void MainWindow::positionChanged(qint64 position){
 
     seekr->setValue(position);
-    if(hasSubs){
-    subs->setSubtitleTime(position);
-    }
+    
+    QString tim = millisToHHMMSS(position)+"/"+millisToHHMMSS(durtion);
+    
+   mediaTimeLbl->setText(tim);
+   
 }
 
 void MainWindow::reloadBmarks()

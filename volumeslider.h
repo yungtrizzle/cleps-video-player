@@ -31,6 +31,7 @@ public:
     explicit volumeSlider(QWidget *parent = 0);
     void setValue(int val);
     void setRange(int start, int end);
+    void changeIcon(QIcon Icon);
 
 signals:
    void volumeChanged(int volume);

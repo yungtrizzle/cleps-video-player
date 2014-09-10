@@ -16,7 +16,6 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 *******************************************************************************/
 
-#include "cleps_vidplayer.h"
 #include "Cleps_MainWindow.h"
 #include <QApplication>
 
@@ -27,7 +26,7 @@ int main(int argc, char *argv[])
 
     a.setOrganizationName("Cleps");
     a.setApplicationName("Cleps Video Player");
-    a.setApplicationVersion("0.21.1");
+    a.setApplicationVersion("0.21.2");
 
     QString locale = QLocale::system().name();
 
@@ -40,12 +39,28 @@ int main(int argc, char *argv[])
     parser.addVersionOption();
     parser.addHelpOption();
     parser.addPositionalArgument("filename", QApplication::tr("A media file to play."));
+    
+    
+    QCommandLineOption clearSettingsOption(QStringList() << "c" << "clear", "Cleans cache,restores default settings and restarts.");
+    parser.addOption(clearSettingsOption);   
+    
+    QCommandLineOption noHistory(QStringList() <<"n" << "no-history", "Media History is not recorded in this mode.");
+    parser.addOption(noHistory);
 
     parser.process(a);
-     const QStringList args = parser.positionalArguments();
-
-      MainWindow w;
-
+    const QStringList args = parser.positionalArguments();
+    
+    bool clense = parser.isSet(clearSettingsOption);
+    
+      
+       if(clense){
+     QSettings settings;
+     settings.clear();
+    }
+    
+    MainWindow w;
+     w.historyFlag = !parser.isSet(noHistory);
+      
      for(const QString &str: args){
          w.loadMedia(str);
      }
@@ -55,3 +70,6 @@ int main(int argc, char *argv[])
 
     return a.exec();
 }
+
+
+

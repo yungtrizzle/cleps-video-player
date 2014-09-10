@@ -27,7 +27,6 @@
 #include "cleps_vidplayer.h"
 #include "volumeslider.h"
 #include "playlistview.h"
-#include "subtitleprovider.h"
 #include "settings_dialog.h"
 #include "bookmarkmanager.h"
 
@@ -39,12 +38,12 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     void changeEvent(QEvent *event);
     void closeEvent(QCloseEvent *event);
-    void resizeEvent(QResizeEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
     void hideEvent(QHideEvent *event);
     void throwFilenotFound(QString str);
     QMap<QUrl, qint64> * getBookmark();
+    bool historyFlag;
 
 
 signals:
@@ -52,7 +51,6 @@ signals:
 
 
 public slots:
-    void addSubs();
     void clear();
     void clearRecent();
     void open();
@@ -67,10 +65,11 @@ public slots:
     void removeMedia(QList<int> list);
     void savePlayList();
     void showPlaylist();
-    void showSub();
     void swap(int old, int newd);
     void loadMedia(QString media);
     void loadPlayList();
+    void fastForward();
+    void rewind();
    
 
  protected:
@@ -105,7 +104,7 @@ private slots:
 
 
 private:
-    QAction *opVid,*config,*mdlist,*subtitle,*mode1, *mode2, *mode3,*mode4, *saveList, *loadList, *cleaR;
+    QAction *opVid,*config,*mdlist,*medName,*mode1, *mode2, *mode3,*mode4, *saveList, *loadList, *cleaR;
     QAction *recentF[5], *bookmk;
     QMap<QUrl,qint64> bookmarks;
     QMediaPlayer *playerD;
@@ -114,21 +113,21 @@ private:
     QMenu *fileMenu, *settingsMenu, *ctxt, *playlistModeMenu, *about, *recent;
     QStringList plist, rcntCache;
     Cleps_VidPlayer *player;
-    QToolButton *playButton, *stopButton, *next, *previous, *bookmark;
+    QToolButton *playButton, *stopButton, *next, *previous, *ffwd,*rwind,*bookmark;
     QSlider *seekr;
     volumeSlider *volSlide;
     playlistView *viewer;
-    SubtitleProvider *subs;
     QShortcut *mte, *shwList, *ply, *stp, *nxt,*prv, *bkmarks;
     QSystemTrayIcon *cleps;
     QStatusBar *sbar;
-    QLabel *ovlay, *mediaTimeLbl;
+    QLabel *mediaTimeLbl;
     QMimeDatabase db;
     QErrorMessage err;
     bool notifyFlag, trayVisible, runbckgd, hasSubs, quitPlistEnd;
     settings_dialog *cfg;
     bookmarkManager *manager;
-
+   qint64 durtion;
+   QActionGroup *modeGrp;
 
     QString millisToHHMMSS(qint64 millis);
     void openBookmarks();

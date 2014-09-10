@@ -59,3 +59,10 @@ void volumeSlider::setRange(int start, int end)
 {
     volSlider->setRange(start,end);
 }
+
+void volumeSlider::changeIcon(QIcon Icon){
+  
+  
+ this->setIcon(Icon); 
+  
+}

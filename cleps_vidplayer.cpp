@@ -49,7 +49,7 @@ Cleps_VidPlayer::Cleps_VidPlayer(QWidget *parent)
        connect(fll,SIGNAL(activated()),this,SLOT(fullScreen()));
        connect(fllve,SIGNAL(activated()),this,SLOT(exitFullScreen()));
        connect(videoWidget, SIGNAL(customContextMenuRequested(QPoint)),this, SLOT(context(QPoint)));
-
+   
 }
 
 

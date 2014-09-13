@@ -44,9 +44,9 @@ bookmarkManager::bookmarkManager(QWidget *parent, QMap<QUrl, qint64> *mks) :
 
     fillModel();
 
-    QPushButton *create = new QPushButton(tr("Create"));
-    QPushButton *deleted = new QPushButton(tr("Delete"));
-    QPushButton *cler = new QPushButton(tr("Clear"));
+    create = new QPushButton(tr("Create"));
+    deleted = new QPushButton(tr("Delete"));
+    cler = new QPushButton(tr("Clear"));
 
     QBoxLayout *hlay = new QHBoxLayout;
     QBoxLayout *vlay = new QVBoxLayout;
@@ -131,6 +131,14 @@ void bookmarkManager::fillModel()
         }
         table->resizeColumnsToContents();
 }
+
+void bookmarkManager::toggleBookmarks(bool tggle)
+{
+
+  create->setEnabled(tggle);
+  
+}
+
 
 QString bookmarkManager::toHHMMSS(qint64 millis)
 {

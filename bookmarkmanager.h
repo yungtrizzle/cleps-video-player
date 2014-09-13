@@ -28,6 +28,7 @@ class bookmarkManager : public QDialog
     Q_OBJECT
 public:
     explicit bookmarkManager(QWidget *parent = 0, QMap<QUrl, qint64> *mks = 0);
+    void toggleBookmarks(bool tggle);
 
 signals:
     void createMark();
@@ -41,6 +42,7 @@ public slots:
 
 private :
      QMap<QUrl, qint64> *bmarks;
+     QPushButton *create, *deleted, *cler;
      QTableView *table;
      QStandardItemModel *model;
 

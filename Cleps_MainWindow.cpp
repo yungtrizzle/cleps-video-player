@@ -53,13 +53,14 @@ MainWindow::MainWindow(QWidget *parent) :
     fileMenu = new QMenu(tr("&Media"));
     opVid = new QAction(tr("&Add to Playlist"), this);
     saveList = new QAction(tr("Save Playlist"),this);
-    loadList = new QAction(tr("Open Playlist"), this);
     QAction *quit = new QAction(tr("&Quit"), this);
+    no_histry = new QAction(tr("Incognito Mode"),this);
+    no_histry->setCheckable(true);
 
     fileMenu->addAction(opVid);
-    fileMenu->addAction(loadList);
     fileMenu->addAction(saveList);
     fileMenu->addSeparator();
+    fileMenu->addAction(no_histry);
     recent = fileMenu->addMenu(tr("Recent Files"));
     fileMenu->addSeparator();
     fileMenu->addAction(quit);
@@ -101,9 +102,9 @@ MainWindow::MainWindow(QWidget *parent) :
     modeGrp->addAction(mode4);
     mode1->setChecked(true);
        
-    settingsMenu->addAction(bookmk);
-    settingsMenu->addAction(mdlist);
     playlistModeMenu = settingsMenu->addMenu(tr("Playlist Mode"));
+    settingsMenu->addAction(mdlist);
+    settingsMenu->addAction(bookmk);
     settingsMenu->addSeparator();
     settingsMenu->addAction(config);
 
@@ -207,8 +208,13 @@ MainWindow::MainWindow(QWidget *parent) :
      config->setShortcutContext(Qt::ApplicationShortcut);
      mte = new QShortcut(this);
      mte->setContext(Qt::ApplicationShortcut);
-     shwList = new QShortcut(this);
-     shwList->setContext(Qt::ApplicationShortcut);
+   
+     bookmk->setShortcut(Qt::CTRL+Qt::Key_B);
+     bookmk->setShortcutContext(Qt::ApplicationShortcut);
+     mdlist->setShortcut(Qt::CTRL+Qt::Key_L);
+     mdlist->setShortcutContext(Qt::ApplicationShortcut);
+     saveList->setShortcut(QKeySequence::Save);
+     saveList->setShortcutContext(Qt::ApplicationShortcut);
 
      ply = new QShortcut(this);
      ply->setContext(Qt::ApplicationShortcut);
@@ -218,17 +224,15 @@ MainWindow::MainWindow(QWidget *parent) :
      nxt->setContext(Qt::ApplicationShortcut);
      prv = new QShortcut(this);
      prv->setContext(Qt::ApplicationShortcut);
-     bkmarks = new QShortcut(this);
-     bkmarks->setContext(Qt::ApplicationShortcut);
 
      connect(opVid, SIGNAL(triggered()), this, SLOT(open()));
      connect(quit, SIGNAL(triggered()), this, SLOT(quit()));
      connect(config,SIGNAL(triggered()),this,SLOT(viewSettings()));
      connect(mdlist, SIGNAL(triggered()), this,SLOT(showPlaylist()));
      connect(saveList,SIGNAL(triggered()),this,SLOT(savePlayList()));
-     connect(loadList,SIGNAL(triggered()),this,SLOT(loadPlayList()));
      connect(cleaR, SIGNAL(triggered()), this, SLOT(clearRecent()));
      connect(bookmk, SIGNAL(triggered()),this,SLOT(showManager()));
+     connect(no_histry,SIGNAL(toggled(bool)),this,SLOT(noHistory(bool)));
 
        connect(playerD, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
        connect(seekr, SIGNAL(sliderMoved(int)),this, SLOT(setPosition(int)));
@@ -243,7 +247,6 @@ MainWindow::MainWindow(QWidget *parent) :
        connect(next,SIGNAL(clicked()),this,SLOT(nextMedia()));
        connect(previous, SIGNAL(clicked()),this,SLOT(previousMedia()));
        connect(mte,SIGNAL(activated()),this,SLOT(mute()));
-       connect(shwList, SIGNAL(activated()),this, SLOT(showPlaylist()));
        connect(ply, SIGNAL(activated()),this,SLOT(play()));
        connect(stp, SIGNAL(activated()),this, SLOT(stop()));
        connect(nxt, SIGNAL(activated()),this,SLOT(nextMedia()));
@@ -258,8 +261,7 @@ MainWindow::MainWindow(QWidget *parent) :
       connect(ffwd,SIGNAL(clicked()),this,SLOT(fastForward()));
       connect(rwind,SIGNAL(clicked()),this,SLOT(rewind()));
       connect(bookmark,SIGNAL(clicked()),this,SLOT(bmarks()));
-      connect(bkmarks,SIGNAL(activated()),this,SLOT(bmarks()));
-
+     
        viewer = new playlistView(this);
     
 
@@ -387,8 +389,6 @@ void MainWindow::clearRecent()
 
   settings.setValue("Recent Files",QStringList());
   readSettings();
-
-  recent->setEnabled(false);
 }
 
 
@@ -402,9 +402,15 @@ QStringList fileName = QFileDialog::getOpenFileNames(this, tr("Open Media"), QDi
       for(const QString &str: fileName){
 	
 	if(QFile::exists(str)){
-
+	  
+	  if(str.contains("m3u",Qt::CaseInsensitive)){
+	  loadPlayList(str);
+	  fileName.removeOne(str);
+	  }else{
+       
          playlist->addMedia(QUrl::fromLocalFile((str)));
-
+	  
+	  
 	 if(historyFlag){
           if(rcntCache.size()>5){
                rcntCache.removeLast();
@@ -413,11 +419,13 @@ QStringList fileName = QFileDialog::getOpenFileNames(this, tr("Open Media"), QDi
 	 }
           QString str2 = str.section('/', -1);
           plist.append(str2);
-        }else{
-	  throwFilenotFound(str);
-	}
+        }
       }
+     else{
+      throwFilenotFound(str); 
      }
+      } 
+    }
      
      viewer->setPlaylist(plist);
 }
@@ -649,28 +657,24 @@ void MainWindow::loadMedia(QString media)
     }
 }
 
-void MainWindow::loadPlayList(){
-
-    QString str = QFileDialog::getOpenFileName(this,tr("Open Playlist"), QDir::homePath(), tr("Playlist Files (*.m3u)"));
-
-    if(!str.isEmpty() && str.contains("m3u",Qt::CaseInsensitive)){
-
+void MainWindow::loadPlayList(QString str){
+   
         QFile f(str);
         if(!f.open(QIODevice::ReadOnly|QIODevice::Text)){
 
             qDebug() << "Unable to open file " << f.fileName();
+	    err.showMessage("Unable to open file "+f.fileName());
            return;
         }
             QTextStream in(&f);
 
             while(!in.atEnd()){
                 QString line = in.readLine();
-               QUrl md(line);
+		QUrl md(line);
                loadMedia(md.toLocalFile());
 
             }
             f.close();
-        }
 
 }
 
@@ -698,7 +702,27 @@ void MainWindow::rewind()
   
 }
 
+void MainWindow::noHistory(bool hsi)
+{
 
+  historyFlag = !hsi;
+  
+  if(hsi){
+  
+    no_histry->setChecked(true);
+    bookmark->setEnabled(false);
+    manager->toggleBookmarks(false);
+  sbar->showMessage(tr("Incognito Mode"));
+  
+  }else{
+
+   no_histry->setChecked(false);
+   bookmark->setEnabled(true);
+   manager->toggleBookmarks(true);
+   sbar->clearMessage(); 
+  }
+  
+}
 
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
@@ -916,7 +940,6 @@ void MainWindow::readSettings()
      nxt->setKey(settings.value("shortcut/nextmedia").value<QKeySequence>());
      prv->setKey(settings.value("shortcut/previousmedia").value<QKeySequence>());
      mte->setKey((settings.value("shortcut/mute").value<QKeySequence>()));
-     shwList->setKey((settings.value("shortcut/show_playlist").value<QKeySequence>()));
 
      if(settings.value("system/tray").toInt() != 0){
 

@@ -22,10 +22,10 @@
 shortcuts::shortcuts(QWidget *parent) :
     QWidget(parent)
 {
-    model = new QStandardItemModel(6,3);
+    model = new QStandardItemModel(5,3);
     model->setHorizontalHeaderLabels(QStringList() << tr("Name") << tr("Default Shortcut") << tr("Active Shortcut"));
     data << tr("Play/Pause") << tr("Space") << tr("Next Media") << tr("N")  << tr("Mute") << tr("M");
-    data << tr("Stop")<< tr("S") << tr("Previous Media") << tr("P") << tr("Show PlayList") << tr("Ctrl+L");
+    data << tr("Stop")<< tr("S") << tr("Previous Media") << tr("P");
 
     defaultData();
     scutTable = new QTableView(this);
@@ -64,7 +64,7 @@ void shortcuts::defaultData()
 {
      QStringListIterator javaStyleIterator(data);
 
-    for(int row=0; row<6;++row){
+    for(int row=0; row<5;++row){
         for (int column = 0; column<2; ++column){
 
             QStandardItem *item = new QStandardItem(javaStyleIterator.next());
@@ -72,7 +72,7 @@ void shortcuts::defaultData()
         }
     }
 
-    for(int i = 0; i<6;++i){
+    for(int i = 0; i<5;++i){
        QStandardItem *item2 = new QStandardItem(QString(tr(" ")));
        model->setItem(i, 2, item2);
     }
@@ -104,10 +104,8 @@ void shortcuts::keySequenceInput()
     key.simplified();
     key.replace(" ", "");
 
-   if(key.contains("show")){
-
-       settings.setValue("shortcut/show_playlist", seq);
-   }else if(key.contains("play")){
+  
+    if(key.contains("play")){
 
        settings.setValue("shortcut/play_pause", seq);
    }else{
@@ -124,7 +122,7 @@ void shortcuts::resetData()
     scutTable->setModel(model);
      QSettings settings;
 
-     for(int row=0; row<6;++row){
+     for(int row=0; row<5;++row){
 
 
          QString key = model->item(row,0)->text().toLower();
@@ -132,10 +130,7 @@ void shortcuts::resetData()
         key = key.replace(" ", "");
           QString value = model->item(row,1)->text().toLower();
 
-         if(key.contains("show")){
-
-             settings.setValue("shortcut/show_playlist", value);
-         }else if(key.contains("play")){
+          if(key.contains("play")){
 
              settings.setValue("shortcut/play_pause", value);
          }else{

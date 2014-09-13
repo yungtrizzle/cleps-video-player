@@ -43,7 +43,7 @@ public:
     void hideEvent(QHideEvent *event);
     void throwFilenotFound(QString str);
     QMap<QUrl, qint64> * getBookmark();
-    bool historyFlag;
+    bool historyFlag = false;
 
 
 signals:
@@ -61,13 +61,14 @@ public slots:
     void stop();
     void mute();
     void nextMedia();
+    void noHistory(bool hsi);
     void previousMedia();
     void removeMedia(QList<int> list);
     void savePlayList();
     void showPlaylist();
     void swap(int old, int newd);
     void loadMedia(QString media);
-    void loadPlayList();
+    void loadPlayList(QString str);
     void fastForward();
     void rewind();
    
@@ -104,8 +105,8 @@ private slots:
 
 
 private:
-    QAction *opVid,*config,*mdlist,*medName,*mode1, *mode2, *mode3,*mode4, *saveList, *loadList, *cleaR;
-    QAction *recentF[5], *bookmk;
+    QAction *opVid,*config,*mdlist,*medName,*mode1,*mode2,*mode3,*mode4,*saveList,*cleaR;
+    QAction *recentF[5], *bookmk, *no_histry;
     QMap<QUrl,qint64> bookmarks;
     QMediaPlayer *playerD;
     QMediaPlaylist *playlist;
@@ -117,7 +118,7 @@ private:
     QSlider *seekr;
     volumeSlider *volSlide;
     playlistView *viewer;
-    QShortcut *mte, *shwList, *ply, *stp, *nxt,*prv, *bkmarks;
+    QShortcut *mte, *ply, *stp, *nxt,*prv, *bkmarks;
     QSystemTrayIcon *cleps;
     QStatusBar *sbar;
     QLabel *mediaTimeLbl;

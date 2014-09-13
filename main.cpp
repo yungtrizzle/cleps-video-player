@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
     parser.process(a);
     const QStringList args = parser.positionalArguments();
     
+     
     bool clense = parser.isSet(clearSettingsOption);
     
       
@@ -59,12 +60,12 @@ int main(int argc, char *argv[])
     }
     
     MainWindow w;
-     w.historyFlag = !parser.isSet(noHistory);
-      
+     w.noHistory(parser.isSet(noHistory));      
+    
      for(const QString &str: args){
          w.loadMedia(str);
      }
-
+    
     w.show();
     w.play();
 
